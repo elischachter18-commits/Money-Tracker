@@ -1513,7 +1513,7 @@ function drawCharts() {
   mkChart('chNW', { type: 'bar', data: { labels: nw.map(r => dMonth(r.s)), datasets: [
     { type: 'line', label: 'Net worth', data: nw.map(r => r.total), borderColor: vio, backgroundColor: vio, tension: .35, pointRadius: 4, pointHoverRadius: 7, borderWidth: 3, order: 0 },
     { label: 'Investments', data: nw.map(r => num(r.invest)), backgroundColor: grad(teal), borderRadius: 6, stack: 's', order: 1 },
-    { label: 'Crypto', data: nw.map(r => num(r.fun)), backgroundColor: mag, borderRadius: 6, stack: 's', order: 1, minBarLength: 4 },
+    { label: 'Crypto total', data: nw.map(r => num(r.fun)), backgroundColor: mag, borderRadius: 6, stack: 's', order: 1, minBarLength: 4 },
     { label: 'Cash total', data: nw.map(r => r.cash), backgroundColor: grad(amb), borderRadius: 6, stack: 's', order: 1 }
   ] }, options: { ...baseOpts(), scales: { ...baseOpts().scales, x: { ...baseOpts().scales.x, stacked: true }, y: { ...baseOpts().scales.y, stacked: true } } } });
   const ms = R.months;
