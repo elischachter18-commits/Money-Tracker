@@ -152,6 +152,27 @@ h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.0
 .item-h b{font-size:16.5px;font-weight:800}
 .biz{display:flex;flex-direction:column;gap:1px;font-size:13.5px;font-weight:600;color:var(--muted);overflow-wrap:anywhere}
 .biz .where{font-weight:500}
+/* phone client list: compact rows that open in place */
+.clist{display:flex;flex-direction:column;gap:8px}
+.crow{background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.crow.open{border-color:var(--violet);box-shadow:var(--shadow)}
+.crow-h{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;border:0;background:none;color:inherit;text-align:left;padding:10px 14px;cursor:pointer;font:inherit}
+.cav{position:relative;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;flex:none;font-weight:800;font-size:14px;color:#fff;
+  background:linear-gradient(135deg,hsl(var(--h) 70% 55%),hsl(calc(var(--h) + 40) 70% 42%));transition:width .25s,height .25s,font-size .25s}
+.crow.open .cav{width:58px;height:58px;font-size:19px}
+.cdot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface);background:var(--good)}
+.cdot.warn{background:var(--amber)} .cdot.bad{background:var(--bad)}
+.cmain{display:flex;flex-direction:column;min-width:0}
+.cmain b{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmain small,.camt small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camt{display:flex;flex-direction:column;align-items:flex-end;font-variant-numeric:tabular-nums}
+.camt b{font-size:15.5px;font-weight:800}
+.cbody{display:flex;flex-direction:column;gap:12px;padding:2px 14px 14px;animation:viewIn .25s ease both}
+.cbody-h{display:flex;flex-direction:column;gap:8px}
+.cbody .btn{align-self:flex-start}
+details.more{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:10px}
+details.more summary{cursor:pointer;font-weight:800;font-size:14px;color:var(--violet);padding:4px 0}
+details.more .fgrid{margin-top:10px}
 .kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .kv div{display:flex;flex-direction:column;gap:1px;min-width:0}
 .kv small{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
@@ -1015,13 +1036,49 @@ function clientBiz(c) {
   if (blank(c.business) && !where) return '';
   return `<span class="biz">${blank(c.business) ? '' : `<span>${esc(c.business)}</span>`}${where ? `<span class="where">📍 ${esc(where)}</span>` : ''}</span>`;
 }
+// phone: one compact row per client (name · company · payment); tapping a row opens its full details in place
+let openClient = null;
+const clientState = c => (c.cancelS != null && !c.active) ? 'bad' : c.launchS == null ? 'warn' : c.cancelS != null ? 'warn' : 'good';
+const initials = s => String(s || '?').replace(/^Example:\s*/, '').split(/[^A-Za-z0-9]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
+const nameHue = s => [...String(s || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 7);
+function clientKv(c) {
+  return `<div class="kv">
+        <div><small>1st payment</small><span>${$0(c.p1)}</span></div>
+        <div><small>2nd</small><span>${$0(c.p2)}</span></div>
+        <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
+        <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
+        <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
+        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
+        <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
+        <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
+        <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
+        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
+        <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
+      </div>`;
+}
+function clientRow(c) {
+  const open = openClient === c.id;
+  return `<div class="crow ${open ? 'open' : ''}" id="crow-${esc(c.id)}">
+    <button class="crow-h" data-toggle-client="${esc(c.id)}" aria-expanded="${open}">
+      <span class="cav" style="--h:${nameHue(c.name)}">${esc(initials(c.name))}<i class="cdot ${clientState(c)}"></i></span>
+      <span class="cmain"><b>${esc(c.name)}</b><small>${esc(c.business || 'No company')}</small></span>
+      <span class="camt"><b>${$0(c.p3)}</b><small>every 4 wks</small></span>
+    </button>
+    ${open ? `<div class="cbody">
+      <div class="cbody-h">${clientBiz(c) || ''}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}<span class="chip">Earned ${$0(c.O)}</span></div></div>
+      ${clientKv(c)}
+      <button class="btn sm" data-edit="client" data-id="${esc(c.id)}">Edit client</button>
+    </div>` : ''}
+  </div>`;
+}
 function vClients() {
   const d = R.dash;
   return `
   <div class="head"><div><span class="eyebrow">Clients</span><h1>${d.signed} signed · ${$0(d.every4)} every 4 weeks</h1>
     <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every 4-week payment = ${pct(S.settings.commRecur)}.</p></div>
     <button class="btn" data-add="client">+ Add client</button></div>
-  <div class="list">${R.clients.map(c => `
+  ${isPhone() ? `<div class="clist">${R.clients.map(clientRow).join('') || '<div class="empty">No clients yet. Tap + to add the first one you sign.</div>'}</div>` : `<div class="list">${R.clients.map(c => `
     <button class="item" data-edit="client" data-id="${esc(c.id)}">
       <div class="item-h"><div class="stack" style="gap:4px"><b>${esc(c.name)}</b>${clientBiz(c)}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
         <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num" style="font-size:18px">${$0(c.O)}</b></div></div>
@@ -1040,7 +1097,7 @@ function vClients() {
         <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
       </div>
     </button>`).join('') || '<div class="empty">No clients yet. Add the first one you sign.</div>'}
-  </div>`;
+  </div>`}`;
 }
 
 function vPaydays() {
@@ -1265,10 +1322,12 @@ new MutationObserver(rethemeObs).observe(document.documentElement, { attributes:
 const FORMS = {
   client: { title: 'Client', fields: [
     ['name', 'Client name', 'text', { req: true, wide: true }], ['business', 'Business name', 'text', { wide: true }],
-    ['city', 'City', 'text'], ['state', 'State', 'text', { ph: 'e.g. WI' }], ['signed', 'Date signed (1st payment)', 'date'], ['type', 'Type', 'select', { opts: CLIENT_TYPES }],
-    ['p1', '1st payment (at signup)', 'money'], ['p2', '2nd payment (1st 4-week)', 'money', { ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
-    ['p3', '3rd payment & after', 'money', { ph: 'Same as 2nd', help: 'Type a number if payments step up (e.g. 3,000 → 3,250 → 3,500).' }],
-    ['launch', 'Campaign launch', 'date', { help: '4-week payments start 4 weeks later.' }], ['cancel', 'Cancel date (if they leave)', 'date', { help: 'Payments on or after it stop counting.' }]
+    ['p1', '1st payment (at signup)', 'money'], ['signed', 'Date signed (1st payment)', 'date'], ['type', 'Type', 'select', { opts: CLIENT_TYPES }],
+    ['launch', 'Campaign launch', 'date', { help: '4-week payments start 4 weeks later.' }],
+    ['p2', '2nd payment (1st 4-week)', 'money', { more: true, ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
+    ['p3', '3rd payment & after', 'money', { more: true, ph: 'Same as 2nd', help: 'Type a number if payments step up (e.g. 3,000 → 3,250 → 3,500).' }],
+    ['city', 'City', 'text', { more: true }], ['state', 'State', 'text', { more: true, ph: 'e.g. WI' }],
+    ['cancel', 'Cancel date (if they leave)', 'date', { more: true, wide: true, help: 'Payments on or after it stop counting.' }]
   ] },
   expense: { title: 'Expense', fields: [['date', 'Date', 'date', { req: true }], ['amount', 'Amount', 'money', { req: true }], ['what', 'What', 'text', { wide: true }], ['category', 'Category', 'select', { opts: EXP_CATS, wide: true }]] },
   other: { title: 'Bonus or one-off pay', fields: [['date', 'Date', 'date', { req: true }], ['amount', 'Amount', 'money', { req: true }], ['desc', 'Description', 'text', { wide: true }]] },
@@ -1286,12 +1345,18 @@ function openForm(kind, id) {
     if (kind === 'expense' || kind === 'other') init = { date: today, category: 'Other' };
     if (kind === 'nw') { const last = R.nwRows.filter(r => !S.example).slice(-1)[0]; const [y, m] = ymd(last ? edate(last.s, 1) : mk(ymd(R.today)[0], ymd(R.today)[1], 1)); init = { month: `${y}-${String(m).padStart(2, '0')}` }; }
   } else if (kind === 'nw') init.month = String(rec.month).slice(0, 7);
+  const field = ([k, l, t, o = {}]) => `<div class="field ${o.wide ? 'wide' : ''}"><label for="f-${k}">${l}${o.req ? ' *' : ''}</label>${
+      t === 'select' ? `<select id="f-${k}" name="${k}">${o.opts.map(v => `<option ${init[k] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`
+      : `<input id="f-${k}" name="${k}" type="${t === 'money' ? 'text' : t}" ${t === 'money' ? 'inputmode="decimal"' : ''} value="${esc(init[k] ?? '')}" placeholder="${esc(o.ph || '')}">`}${o.help ? `<small>${o.help}</small>` : ''}</div>`;
   const sh = document.getElementById('sheet');
   sh.innerHTML = `<form class="panel" id="form" novalidate><div class="handle" aria-hidden="true"></div>
     <div class="card-h"><h2 style="font-size:18px">${rec ? 'Edit' : 'Add'} ${def.title.toLowerCase()}</h2><button type="button" class="btn ghost sm" data-close>Close</button></div>
-    <div class="fgrid">${def.fields.map(([k, l, t, o = {}]) => `<div class="field ${o.wide ? 'wide' : ''}"><label for="f-${k}">${l}${o.req ? ' *' : ''}</label>${
-      t === 'select' ? `<select id="f-${k}" name="${k}">${o.opts.map(v => `<option ${init[k] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`
-      : `<input id="f-${k}" name="${k}" type="${t === 'money' ? 'text' : t}" ${t === 'money' ? 'inputmode="decimal"' : ''} value="${esc(init[k] ?? '')}" placeholder="${esc(o.ph || '')}">`}${o.help ? `<small>${o.help}</small>` : ''}</div>`).join('')}</div>
+    <div class="fgrid">${def.fields.filter(f => !(f[3] || {}).more).map(field).join('')}${(() => {
+      const more = def.fields.filter(f => (f[3] || {}).more);
+      if (!more.length) return '';
+      const filled = more.some(([k]) => !blank(init[k]));
+      return `<details class="more" ${filled ? 'open' : ''}><summary>More details: later payments, location, cancel date</summary><div class="fgrid">${more.map(field).join('')}</div></details>`;
+    })()}</div>
     <p class="err" id="ferr" hidden></p>
     <div class="panel-f">${rec ? '<button type="button" class="btn danger" data-del>Delete</button>' : '<span></span>'}<button class="btn" type="submit">${rec ? 'Save changes' : 'Add'}</button></div>
   </form>`;
@@ -1338,6 +1403,11 @@ document.addEventListener('click', e => {
   if (b.hasAttribute('data-export')) return exportBackup();
   if (b.hasAttribute('data-import')) return document.getElementById('importFile').click();
   if (b.hasAttribute('data-signout')) { closeForm(); tab = 'home'; renderTabs(); return firebase.auth().signOut(); }
+  if (b.dataset.toggleClient) {
+    const id = b.dataset.toggleClient; openClient = openClient === id ? null : id; render();
+    if (openClient) document.getElementById('crow-' + id)?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    return;
+  }
   if (b.dataset.tab) return go(b.dataset.tab);
   if (b.dataset.bnav) return b.dataset.bnav === 'more' ? openMore() : go(b.dataset.bnav);
   if (b.id === 'fab') return b.dataset.fab === 'quick' ? openQuick() : openForm(b.dataset.fab);
