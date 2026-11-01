@@ -420,7 +420,7 @@ button,a,input,select{touch-action:manipulation}
 .signed-out nav.tabs,.signed-out .bnav,.signed-out .fab,.signed-out #skinBtn{display:none!important}
 /* app lock: full-screen passcode pad */
 #lock{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:var(--bg);color:var(--on-bg);
-  padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));animation:fade .2s both}
+  padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));overflow:hidden;transform:none}
 #lock[hidden]{display:none}
 .locked body{overflow:hidden}
 .lock-top{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
@@ -440,8 +440,8 @@ button,a,input,select{touch-action:manipulation}
 /* wrong passcode: the verdict */
 /* only transform and opacity animate, on layers promoted up front, so it plays smoothly and the text stays sharp */
 .lock-body{display:flex;flex-direction:column;align-items:center;gap:22px;will-change:transform}
-.lock-body.quake{animation:quake .5s cubic-bezier(.36,.07,.19,.97) both}
-@keyframes quake{10%{transform:translate3d(-13px,6px,0)}20%{transform:translate3d(15px,-7px,0)}32%{transform:translate3d(-14px,4px,0)}45%{transform:translate3d(10px,6px,0)}60%{transform:translate3d(-6px,-3px,0)}78%{transform:translate3d(3px,1px,0)}100%{transform:none}}
+.lock-body.quake{animation:quake .4s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes quake{12%{transform:translate3d(-6px,0,0)}25%{transform:translate3d(6px,0,0)}40%{transform:translate3d(-5px,0,0)}55%{transform:translate3d(4px,0,0)}72%{transform:translate3d(-2px,0,0)}100%{transform:none}}
 .fy-wrap{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
 .fy-flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#ff4a1a 0,#9e0000 50%,#140000 100%);opacity:0;will-change:opacity;animation:fyflash 1.6s ease-out both}
 @keyframes fyflash{0%{opacity:0}6%{opacity:.95}13%{opacity:.7}20%{opacity:.9}100%{opacity:0}}
