@@ -1,6 +1,6 @@
 // Keeps Money Tracker opening with no signal: serves the app shell from cache, refreshes it in the background.
 // Sync traffic (Firestore, sign-in) is never cached; Firebase queues those writes itself while offline.
-const CACHE = "money-v3";
+const CACHE = "money-v4";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./firebase-config.js", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
@@ -17,7 +17,7 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
-  const staticLib = /(^|\.)gstatic\.com$|^fonts\.googleapis\.com$|^cdnjs\.cloudflare\.com$/.test(url.hostname);
+  const staticLib = /(^|\.)gstatic\.com$|^fonts\.googleapis\.com$|^cdnjs\.cloudflare\.com$|^cdn\.jsdelivr\.net$/.test(url.hostname);
   if (!sameOrigin && !staticLib) return;
   // the app page itself: newest version first so updates show on the first open; the saved copy only when offline
   if (req.mode === "navigate") {

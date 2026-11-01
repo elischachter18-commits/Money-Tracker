@@ -152,6 +152,91 @@ h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.0
 .item-h b{font-size:16.5px;font-weight:800}
 .biz{display:flex;flex-direction:column;gap:1px;font-size:13.5px;font-weight:600;color:var(--muted);overflow-wrap:anywhere}
 .biz .where{font-weight:500}
+/* ---------- client map (Original look; each theme restyles it below) ---------- */
+.mapwrap{position:relative;aspect-ratio:975/610;width:100%;max-width:100%;border-radius:22px;overflow:visible;isolation:isolate;
+  background:radial-gradient(circle,rgba(164,147,255,.16) 1px,transparent 1.5px) 0 0/16px 16px,radial-gradient(ellipse at 50% 0%,#2c2170,#0e0b26 72%);border:1px solid #2e2a62;box-shadow:0 20px 50px -24px rgba(20,10,80,.8)}
+.map-msg{position:absolute;inset:0;display:grid;place-items:center;color:#a7a2ce;font-weight:700;text-align:center;padding:20px}
+.usmap{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit;overflow:hidden}
+.usmap .state{fill:#221c58;transition:fill .3s}
+.usmap .state.hot{fill:#3a2a8c}
+.usmap .borders{fill:none;stroke:#7d6cf0;stroke-opacity:.5;stroke-width:.8;vector-effect:non-scaling-stroke}
+.usmap .nation{fill:none;stroke:#a493ff;stroke-width:1.6;vector-effect:non-scaling-stroke}
+.usmap .string,.usmap .compass,.usmap .eclipse{display:none}
+.mpin{position:absolute;z-index:2;width:34px;height:34px;margin:-17px 0 0 -17px;border:0;padding:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mpin::before{content:"";position:absolute;inset:7px;border-radius:50%;border:2px solid #FF4D8D;opacity:0;animation:mping 2.6s ease-out infinite;animation-delay:calc(var(--i) * .35s)}
+@keyframes mping{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.3);opacity:0}}
+.mpin .ph{position:absolute;inset:10px;border-radius:50%;background:#FF4D8D;box-shadow:0 0 0 3px rgba(255,77,141,.28),0 0 14px #FF4D8D;transition:transform .2s}
+.mpin:hover .ph,.mpin.sel .ph{transform:scale(1.35)}
+.mpin.sel .ph{background:#FFB627;box-shadow:0 0 0 3px rgba(255,182,39,.35),0 0 16px #FFB627}
+.mpin .pc{position:absolute;top:0;right:-2px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#fff;color:#111;font:800 11px/17px var(--f-body);text-align:center}
+.mapwrap.drop .mpin{animation:pdrop .7s cubic-bezier(.2,1.5,.4,1) both;animation-delay:calc(var(--i) * 70ms)}
+@keyframes pdrop{from{transform:translateY(-60px);opacity:0}}
+.mpop{position:absolute;z-index:6;width:300px;max-width:72%;transform:translate(-50%,calc(-100% - 24px));animation:fade .2s both}
+.mpop.below{transform:translate(-50%,24px)}
+.mcard{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:0 18px 40px -12px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto}
+.mcli{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px dashed var(--line)}
+.mcli .btn{align-self:flex-start}
+@media (max-width:760px){.mapwrap{margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));width:auto;max-width:none;border-radius:0;border-left:0;border-right:0}.mpin{width:30px;height:30px;margin:-15px 0 0 -15px}.mpin .ph{inset:9px}}
+
+/* Middle Earth: an old parchment map, wax-seal pins, a compass rose */
+[data-skin="me"] .mapwrap{background:radial-gradient(ellipse at 25% 20%,rgba(255,250,228,.8),transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(122,80,28,.25),transparent 55%),#e6d5ad;border:1px solid #b8955a;box-shadow:inset 0 0 0 5px #e6d5ad,inset 0 0 0 6px rgba(140,106,18,.6),inset 0 0 60px rgba(92,60,18,.35)}
+[data-skin="me"] .usmap .state{fill:#efe3c3}
+[data-skin="me"] .usmap .state.hot{fill:#e3cb8f}
+[data-skin="me"] .usmap .borders{stroke:#8a6a3a;stroke-opacity:.7;stroke-dasharray:3 2}
+[data-skin="me"] .usmap .nation{stroke:#4a3214;stroke-width:1.8}
+[data-skin="me"] .usmap .compass{display:inline}
+[data-skin="me"] .usmap .compass circle{fill:none;stroke:#8a6a3a;stroke-width:1.2}
+[data-skin="me"] .usmap .compass path{fill:#d9c28c;stroke:#6b4e1e;stroke-width:1}
+[data-skin="me"] .usmap .compass .n{fill:#8c1c13}
+[data-skin="me"] .usmap .compass text{fill:#4a3214;font:700 16px "Cinzel",serif;text-anchor:middle}
+[data-skin="me"] .mpin::before{display:none}
+[data-skin="me"] .mpin .ph{inset:7px;background:radial-gradient(circle at 35% 30%,#c4402e,#7a0f0a 70%);border:2px solid #d4a640;box-shadow:0 3px 4px rgba(60,30,0,.5)}
+[data-skin="me"] .mpin .ph::after{content:"✦";position:absolute;inset:0;display:grid;place-items:center;color:#f3d67a;font-size:9px}
+[data-skin="me"] .mpin.sel .ph{background:radial-gradient(circle at 35% 30%,#3c7a4a,#1b3a23 70%)}
+[data-skin="me"] .mpin .pc{background:#2f4a2b;color:#f3e3b5}
+
+/* Breaking Bad: a lab readout, neon state lines, blue crystal pins */
+[data-skin="bb"] .mapwrap{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64v33' fill='none' stroke='%234BC35C' stroke-opacity='.09' stroke-width='1.2'/%3E%3C/svg%3E"),radial-gradient(ellipse at 50% 30%,#0f2a18,#04100a 75%);border:1px solid #24472f;border-radius:4px}
+[data-skin="bb"] .usmap .state{fill:#0b2014}
+[data-skin="bb"] .usmap .state.hot{fill:#14401f}
+[data-skin="bb"] .usmap .borders{stroke:#4BC35C;stroke-opacity:.45}
+[data-skin="bb"] .usmap .nation{stroke:#4BC35C;stroke-width:1.8}
+[data-skin="bb"] .mpin::before{border-color:#3FD0F5;border-radius:3px}
+[data-skin="bb"] .mpin .ph{inset:10px;border-radius:2px;transform:rotate(45deg);background:linear-gradient(135deg,#d9f8ff,#3FD0F5 45%,#1a8fd0);box-shadow:0 0 12px #3FD0F5}
+[data-skin="bb"] .mpin:hover .ph,[data-skin="bb"] .mpin.sel .ph{transform:rotate(45deg) scale(1.35)}
+[data-skin="bb"] .mpin.sel .ph{background:linear-gradient(135deg,#fff3c0,#F2C230 50%,#c99500);box-shadow:0 0 14px #F2C230}
+[data-skin="bb"] .mpin .pc{background:#F2C230;color:#121000;border-radius:2px}
+[data-skin="bb"] .mcard{border-radius:4px;border-top:3px solid #4BC35C}
+
+/* Berserk: black iron land, blood-red borders, burning brand pins, the eclipse */
+[data-skin="bk"] .mapwrap{background:radial-gradient(ellipse at 50% 115%,rgba(150,10,14,.5),transparent 60%),#0a0808;border:1px solid #3a2f2b;border-top:2px solid #6b1015;border-radius:0}
+[data-skin="bk"] .usmap .state{fill:#161111}
+[data-skin="bk"] .usmap .state.hot{fill:#2c0c0e}
+[data-skin="bk"] .usmap .borders{stroke:#6b1015;stroke-opacity:.8}
+[data-skin="bk"] .usmap .nation{stroke:#b3121b;stroke-width:1.8}
+[data-skin="bk"] .usmap .eclipse{display:inline}
+[data-skin="bk"] .usmap .eclipse .ring{fill:#d4261e;opacity:.85}
+[data-skin="bk"] .usmap .eclipse .sun{fill:#000}
+[data-skin="bk"] .mpin::before{border-color:#ff3b30}
+[data-skin="bk"] .mpin .ph{inset:6px;border-radius:0;background:#e0302a;clip-path:polygon(50% 0,60% 38%,100% 50%,60% 62%,50% 100%,40% 62%,0 50%,40% 38%);box-shadow:none;filter:drop-shadow(0 0 5px #ff2a1a)}
+[data-skin="bk"] .mpin.sel .ph{background:#f1e9df}
+[data-skin="bk"] .mpin .pc{background:#b3121b;color:#f1e9df;border-radius:0}
+[data-skin="bk"] .mcard{border-radius:0;border-left:4px solid #b3121b}
+[data-skin="bk"] .mpop{max-width:68%}
+
+/* Seven: a paper map pinned to a cork board, red pushpins joined by red string in the order they signed */
+[data-skin="sv"] .mapwrap{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .15 0 0 0 0 .05 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),#9a6a3c;border:6px solid #3b2a18;border-radius:2px;box-shadow:inset 0 0 40px rgba(0,0,0,.55),0 18px 30px -12px #000}
+[data-skin="sv"] .usmap{filter:drop-shadow(3px 5px 6px rgba(0,0,0,.55))}
+[data-skin="sv"] .usmap .state{fill:#ddd2b6}
+[data-skin="sv"] .usmap .state.hot{fill:#cbb88f}
+[data-skin="sv"] .usmap .borders{stroke:#6b5d45;stroke-opacity:.7}
+[data-skin="sv"] .usmap .nation{stroke:#3a3226;stroke-width:1.4}
+[data-skin="sv"] .usmap .string{display:inline;fill:none;stroke:#b3121b;stroke-width:1.8;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.9}
+[data-skin="sv"] .mpin::before{display:none}
+[data-skin="sv"] .mpin .ph{inset:9px;background:radial-gradient(circle at 35% 30%,#ff8a8a,#c0181c 55%,#6e0a0a);box-shadow:2px 4px 4px rgba(0,0,0,.5)}
+[data-skin="sv"] .mpin.sel .ph{background:radial-gradient(circle at 35% 30%,#fff3b0,#d4a017 55%,#7a5a00)}
+[data-skin="sv"] .mpin .pc{background:#1c1812;color:#d9ceb2;border-radius:0;font-family:"Special Elite",monospace}
+
 /* phone client list: compact rows that open in place */
 .clist{display:flex;flex-direction:column;gap:8px}
 .crow{background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);overflow:hidden;transition:border-color .2s,box-shadow .2s}
@@ -1067,7 +1152,7 @@ function buildState() {
 }
 
 /* ============ rendering ============ */
-const TABS = [['home', 'Dashboard'], ['clients', 'Clients'], ['paydays', 'Paydays'], ['expenses', 'Expenses'], ['other', 'Other pay'], ['networth', 'Net worth'], ['pl', 'Business P&L'], ['milestones', 'Milestones'], ['settings', 'Settings']];
+const TABS = [['home', 'Dashboard'], ['clients', 'Clients'], ['map', 'Client map'], ['paydays', 'Paydays'], ['expenses', 'Expenses'], ['other', 'Other pay'], ['networth', 'Net worth'], ['pl', 'Business P&L'], ['milestones', 'Milestones'], ['settings', 'Settings']];
 let tab = TABS.some(t => t[0] === location.hash.slice(1)) ? location.hash.slice(1) : 'home';
 let S, R, showAllPaydays = false, renderQueued = false, deferred = false, lastTab = null;
 const charts = {};
@@ -1090,11 +1175,12 @@ const ICONS = {
   theme: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>',
   add: '<path d="M12 5v14M5 12h14"/>',
   client: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.6 3.4-5.5 6.5-5.5 1.5 0 2.9.4 4 1.3M18 15v6M15 18h6"/>',
-  nw: '<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>'
+  nw: '<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>',
+  map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>'
 };
 const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ''}</svg>`;
 const BNAV = [['home', 'Home'], ['clients', 'Clients'], ['paydays', 'Paydays'], ['expenses', 'Expenses'], ['more', 'More']];
-const MORE = ['other', 'networth', 'pl', 'milestones', 'settings'];
+const MORE = ['map', 'other', 'networth', 'pl', 'milestones', 'settings'];
 const FAB_ADD = { home: 'quick', clients: 'client', expenses: 'expense', other: 'other', networth: 'nw' };
 
 function renderTabs() {
@@ -1118,6 +1204,7 @@ function openMenu(title, items, note = '') {
 function openMore() {
   openMenu('More', [
     ['other', 'Other pay', 'Bonuses and one-off payments', 'go:other'],
+    ['map', 'Client map', 'Where your clients are', 'go:map'],
     ['networth', 'Net worth', 'Your month-end balances', 'go:networth'],
     ['pl', 'Business P&L', 'Income, expenses and profit by month', 'go:pl'],
     ['milestones', 'Milestones', 'Best month and your rewards', 'go:milestones'],
@@ -1150,12 +1237,14 @@ function render() {
   syncLock();
   S = buildState(); R = compute(S, todaySerial());
   if (!pendingSkin && S.settings.skin && S.settings.skin !== currentSkin) setSkinAttr(S.settings.skin);
-  const views = { home: vHome, clients: vClients, paydays: vPaydays, expenses: vExpenses, other: vOther, networth: vNetWorth, pl: vPL, milestones: vMilestones, settings: vSettings };
+  if (lastTab !== tab) mapAnimate = true;
+  const views = { home: vHome, clients: vClients, map: vMap, paydays: vPaydays, expenses: vExpenses, other: vOther, networth: vNetWorth, pl: vPL, milestones: vMilestones, settings: vSettings };
   const fresh = lastTab !== tab; lastTab = tab;
   const banner = S.example ? `<div class="banner"><p>These are example numbers so you can see how it works. Add your first client, expense or balance and they disappear.</p><div class="chips"><button class="btn sm ghost" data-import>Import backup</button><button class="btn sm" data-add="client">+ Add a client</button></div></div>` : '';
   main.innerHTML = `<div class="view" ${fresh ? '' : 'style="animation:none"'}>${banner}${views[tab]()}</div>`;
   if (SKIN_FX[currentSkin]) SKIN_FX[currentSkin](main);
   drawCharts();
+  if (tab === 'map') drawMap();
   if (fresh) countUps();
 }
 
@@ -1421,6 +1510,106 @@ function vPL() {
     <tbody>${R.months.map(r => `<tr class="${r.m > R.today ? 'future' : ''}"><td><b>${dMonth(r.m)}</b></td><td>${$2(r.inc)}</td><td>${$2(r.ex)}</td>
       <td class="${sign(r.profit)}">${$2(r.profit)}</td><td class="${sign(r.ytd)}">${$2(r.ytd)}</td><td class="${sign(r.takeHome)}"><b>${$2(r.takeHome)}</b></td></tr>`).join('')}</tbody></table></div>`}`;
 }
+/* ============ client map: one pin per client city, looked up once on OpenStreetMap and saved in the synced 'geo' doc ============ */
+const STATES = { AL: ['Alabama', 32.8, -86.8], AK: ['Alaska', 64, -152], AZ: ['Arizona', 34.3, -111.7], AR: ['Arkansas', 34.9, -92.4], CA: ['California', 37.2, -119.5], CO: ['Colorado', 39, -105.5], CT: ['Connecticut', 41.6, -72.7], DE: ['Delaware', 39, -75.5], DC: ['District of Columbia', 38.9, -77], FL: ['Florida', 28.6, -82.4], GA: ['Georgia', 32.7, -83.4], HI: ['Hawaii', 20.8, -156.3], ID: ['Idaho', 44.4, -114.6], IL: ['Illinois', 40, -89.2], IN: ['Indiana', 39.9, -86.3], IA: ['Iowa', 42.1, -93.5], KS: ['Kansas', 38.5, -98.4], KY: ['Kentucky', 37.5, -85.3], LA: ['Louisiana', 31.1, -92], ME: ['Maine', 45.4, -69.2], MD: ['Maryland', 39, -76.8], MA: ['Massachusetts', 42.3, -71.8], MI: ['Michigan', 44.3, -85.4], MN: ['Minnesota', 46.3, -94.3], MS: ['Mississippi', 32.7, -89.7], MO: ['Missouri', 38.4, -92.5], MT: ['Montana', 47, -109.6], NE: ['Nebraska', 41.5, -99.8], NV: ['Nevada', 39.3, -116.6], NH: ['New Hampshire', 43.7, -71.6], NJ: ['New Jersey', 40.2, -74.7], NM: ['New Mexico', 34.4, -106.1], NY: ['New York', 42.9, -75.5], NC: ['North Carolina', 35.6, -79.4], ND: ['North Dakota', 47.5, -100.5], OH: ['Ohio', 40.3, -82.8], OK: ['Oklahoma', 35.6, -97.5], OR: ['Oregon', 43.9, -120.6], PA: ['Pennsylvania', 40.9, -77.8], RI: ['Rhode Island', 41.7, -71.5], SC: ['South Carolina', 33.9, -80.9], SD: ['South Dakota', 44.4, -100.2], TN: ['Tennessee', 35.9, -86.4], TX: ['Texas', 31.5, -99.3], UT: ['Utah', 39.3, -111.7], VT: ['Vermont', 44.1, -72.7], VA: ['Virginia', 37.5, -78.9], WA: ['Washington', 47.4, -120.5], WV: ['West Virginia', 38.6, -80.6], WI: ['Wisconsin', 44.6, -89.9], WY: ['Wyoming', 43, -107.6] };
+function normState(s) {
+  const t = String(s ?? '').trim(); if (!t) return '';
+  if (t.length === 2 && STATES[t.toUpperCase()]) return t.toUpperCase();
+  const hit = Object.entries(STATES).find(([, v]) => v[0].toLowerCase() === t.toLowerCase());
+  return hit ? hit[0] : '';
+}
+let mapLibs = null, mapSel = null, mapAnimate = true, mapDrawId = 0;
+const loadScript = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+function loadMap() {
+  if (!mapLibs) mapLibs = (async () => {
+    await loadScript('https://cdn.jsdelivr.net/npm/d3-array@3.2.4/dist/d3-array.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/dist/d3-geo.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js');
+    const us = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-albers-10m.json').then(r => r.json());
+    const path = d3.geoPath(); // the atlas is already projected (Albers USA, 975×610)
+    return {
+      states: topojson.feature(us, us.objects.states).features.map(f => ({ name: f.properties.name, d: path(f) })),
+      borders: path(topojson.mesh(us, us.objects.states, (a, b) => a !== b)),
+      nation: path(topojson.feature(us, us.objects.nation)),
+      proj: d3.geoAlbersUsa().scale(1300).translate([487.5, 305]),
+    };
+  })().catch(e => { mapLibs = null; throw e; });
+  return mapLibs;
+}
+// city lookups: one at a time, at most one a second (OpenStreetMap's usage rule)
+const geoQ = [], geoPending = new Set(), geoFailed = new Set(); let geoBusy = false;
+async function geocode(items) {
+  for (const it of items) if (!geoPending.has(it.key) && !geoFailed.has(it.key)) { geoPending.add(it.key); geoQ.push(it); }
+  if (geoBusy) return; geoBusy = true;
+  while (geoQ.length) {
+    const it = geoQ.shift();
+    try {
+      const q = encodeURIComponent([it.city, it.st ? STATES[it.st][0] : '', 'USA'].filter(Boolean).join(', '));
+      const j = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=us`).then(r => r.json());
+      if (j && j[0]) write('geo', { ...(docs.geo || {}), [it.key]: [+(+j[0].lat).toFixed(4), +(+j[0].lon).toFixed(4)] });
+      else { geoFailed.add(it.key); scheduleRender(); }
+    } catch { geoFailed.add(it.key); scheduleRender(); }
+    geoPending.delete(it.key);
+    await new Promise(r => setTimeout(r, 1100));
+  }
+  geoBusy = false;
+}
+function mapPoints() {
+  const groups = new Map(), missing = [], pending = [];
+  for (const c of R.clients) {
+    if (blank(c.name)) continue;
+    if (blank(c.city)) { missing.push(c); continue; }
+    const st = normState(c.state), city = String(c.city).trim(), key = `${city.toLowerCase()}|${st}`;
+    let ll = (docs.geo || {})[key], approx = false;
+    if (!ll && geoFailed.has(key) && st) { ll = STATES[st].slice(1); approx = true; } // city not found: centre of the state
+    if (!ll) { if (!geoFailed.has(key)) pending.push({ key, city, st }); else missing.push(c); continue; }
+    if (!groups.has(key)) groups.set(key, { key, city, st, ll, approx, clients: [] });
+    groups.get(key).clients.push(c);
+  }
+  return { groups: [...groups.values()], missing, pending };
+}
+function vMap() {
+  const named = R.clients.filter(c => !blank(c.name));
+  const states = new Set(named.map(c => normState(c.state)).filter(Boolean)).size;
+  return `<div class="head"><div><span class="eyebrow">Client map</span><h1>${named.length} clients across ${states} state${states === 1 ? '' : 's'}</h1>
+    <p class="lede">Each pin is a client’s city. Tap a pin to see who’s there.</p></div></div>
+    <div class="mapwrap" id="mapwrap"><div class="map-msg">Drawing the map…</div></div>
+    <div id="mapnote" class="stack"></div>`;
+}
+function pinCard(g) {
+  return `<div class="mcard"><div class="card-h"><b>📍 ${esc(g.city)}${g.st ? ', ' + g.st : ''}${g.approx ? ' <small class="hint">(approximate)</small>' : ''}</b><button class="btn ghost sm" data-pop-close>Close</button></div>
+    ${g.clients.map(c => `<div class="mcli"><div class="item-h"><div class="stack" style="gap:3px"><b>${esc(c.name)}</b>${blank(c.business) ? '' : `<span class="hint">${esc(c.business)}</span>`}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
+      <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num">${$0(c.O)}</b></div></div>
+      <div class="kv"><div><small>Every 4 wks</small><span>${$0(c.p3)}</span></div><div><small>Signed</small><span>${c.signedS == null ? '—' : dShort(c.signedS)}</span></div><div><small>Next payment</small><span>${typeof c.next === 'number' ? dShort(c.next) : esc(c.next)}</span></div></div>
+      <button class="btn sm" data-edit="client" data-id="${esc(c.id)}">Open client</button></div>`).join('')}</div>`;
+}
+async function drawMap() {
+  const id = ++mapDrawId, wrap = document.getElementById('mapwrap'); if (!wrap) return;
+  let M; try { M = await loadMap(); } catch { wrap.innerHTML = '<div class="map-msg">The map needs an internet connection the first time it loads.</div>'; return; }
+  if (id !== mapDrawId || !document.body.contains(wrap)) return;
+  const { groups, missing, pending } = mapPoints();
+  let pts = groups.map(g => { const p = M.proj([g.ll[1], g.ll[0]]); return p ? { ...g, x: p[0], y: p[1] } : null; }).filter(Boolean);
+  // nudge pins that would sit on top of each other
+  pts.forEach((p, i) => { let k = 0; while (pts.slice(0, i).some(q => Math.hypot(q.x - p.x, q.y - p.y) < 14) && k < 8) { p.x += 15 * Math.cos(k * 1.3); p.y += 15 * Math.sin(k * 1.3); k++; } });
+  const hot = new Set(pts.map(p => p.st && STATES[p.st][0]));
+  const order = [...pts].sort((a, b) => Math.min(...a.clients.map(c => c.signedS ?? 1e9)) - Math.min(...b.clients.map(c => c.signedS ?? 1e9)));
+  const extra = currentSkin === 'sv' && order.length > 1 ? `<polyline class="string" points="${order.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/>`
+    : currentSkin === 'me' ? `<g class="compass" transform="translate(905 545)"><circle r="40"/><circle r="30"/><path d="M0-48 7-7 48 0 7 7 0 48-7 7-48 0-7-7Z"/><path class="n" d="M0-48 7-7H-7Z"/><text y="-54">N</text></g>`
+    : currentSkin === 'bk' ? `<g class="eclipse" transform="translate(630 565)"><circle class="ring" r="34"/><circle class="sun" r="27"/></g>` : '';
+  const sel = pts.find(p => p.key === mapSel);
+  const phone = isPhone();
+  const pop = sel && !phone ? `<div class="mpop ${sel.y / 610 < 0.45 ? 'below' : ''}" style="left:${Math.min(80, Math.max(20, sel.x / 9.75)).toFixed(2)}%;top:${(sel.y / 6.1).toFixed(2)}%">${pinCard(sel)}</div>` : '';
+  wrap.classList.toggle('drop', mapAnimate); mapAnimate = false;
+  wrap.innerHTML = `<svg class="usmap" viewBox="0 0 975 610" aria-hidden="true"><g>${M.states.map(s => `<path class="state ${hot.has(s.name) ? 'hot' : ''}" d="${s.d}"/>`).join('')}</g>
+      <path class="borders" d="${M.borders}"/><path class="nation" d="${M.nation}"/>${extra}</svg>
+    ${pts.map((p, i) => `<button class="mpin ${mapSel === p.key ? 'sel' : ''}" data-pin-key="${esc(p.key)}" style="left:${(p.x / 9.75).toFixed(2)}%;top:${(p.y / 6.1).toFixed(2)}%;--i:${i}" aria-label="${esc(p.city)}: ${p.clients.map(c => esc(c.name)).join(', ')}"><i class="ph"></i>${p.clients.length > 1 ? `<span class="pc">${p.clients.length}</span>` : ''}</button>`).join('')}
+    ${pop}`;
+  const note = document.getElementById('mapnote');
+  if (note) note.innerHTML = `${sel && phone ? pinCard(sel) : ''}
+    ${pending.length ? `<p class="hint">Finding ${pending.length} cit${pending.length === 1 ? 'y' : 'ies'} on the map…</p>` : ''}
+    ${missing.length ? `<p class="hint">Not on the map: ${missing.map(c => esc(c.name)).join(', ')} (add a city, or check its spelling).</p>` : ''}`;
+  if (pending.length) geocode(pending);
+}
 function vMilestones() {
   const ms = S.settings.milestones;
   return `
@@ -1632,6 +1821,8 @@ document.addEventListener('click', e => {
   if (b.hasAttribute('data-export')) return exportBackup();
   if (b.hasAttribute('data-import')) return document.getElementById('importFile').click();
   if (b.hasAttribute('data-signout')) { closeForm(); tab = 'home'; renderTabs(); return firebase.auth().signOut(); }
+  if (b.dataset.pinKey) { mapSel = mapSel === b.dataset.pinKey ? null : b.dataset.pinKey; render(); if (mapSel && isPhone()) document.getElementById('mapnote')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
+  if (b.hasAttribute('data-pop-close')) { mapSel = null; return render(); }
   if (b.dataset.toggleClient) {
     const id = b.dataset.toggleClient; openClient = openClient === id ? null : id; render();
     if (openClient) document.getElementById('crow-' + id)?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
