@@ -291,6 +291,75 @@ h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.0
 [data-skin="sv"] .mpin .ph{inset:7px}
 @media (max-width:760px){[data-skin="sv"] .mlab{font-size:15px;transform:translate(7px,-18px) rotate(-6deg)}[data-skin="sv"] .tape{width:64px;height:18px}}
 
+/* ================= whole-app drama, per theme. Only transform and opacity animate, on fixed layers that never move the page ================= */
+.atmo{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.atmo i{position:absolute;display:none;will-change:transform,opacity}
+
+/* Original: drifting aurora, a sheen across the big tiles, gradient headlines */
+:root:not([data-skin]) .glow{display:none}
+:root:not([data-skin]) .atmo i{display:block;width:80vmax;height:80vmax;border-radius:50%}
+:root:not([data-skin]) .atmo i:nth-child(1){left:-25vmax;top:-35vmax;background:radial-gradient(circle,color-mix(in srgb,var(--magenta) 30%,transparent),transparent 62%);animation:aur1 24s ease-in-out infinite alternate}
+:root:not([data-skin]) .atmo i:nth-child(2){right:-30vmax;bottom:-40vmax;background:radial-gradient(circle,color-mix(in srgb,var(--violet) 32%,transparent),transparent 62%);animation:aur2 28s ease-in-out infinite alternate}
+@keyframes aur1{to{transform:translate(22vmax,16vmax) scale(1.15)}}
+@keyframes aur2{to{transform:translate(-20vmax,-14vmax) scale(1.12)}}
+:root:not([data-skin]) .tile::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.3) 50%,transparent 62%);transform:translateX(-130%);animation:sheen 7s ease-in-out infinite}
+:root:not([data-skin]) .tile:nth-child(2)::before{animation-delay:.35s} :root:not([data-skin]) .tile:nth-child(3)::before{animation-delay:.7s} :root:not([data-skin]) .tile:nth-child(4)::before{animation-delay:1.05s}
+@keyframes sheen{0%,72%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+:root:not([data-skin]) .head h1{background:linear-gradient(95deg,var(--ink) 20%,var(--violet) 65%,var(--magenta));-webkit-background-clip:text;background-clip:text;color:transparent}
+:root:not([data-skin]) .card{border-color:color-mix(in srgb,var(--violet) 22%,var(--line));box-shadow:0 1px 0 color-mix(in srgb,var(--violet) 25%,transparent) inset,var(--shadow)}
+
+/* Middle Earth: candlelight on old parchment, inked contour lines, illuminated capitals, gold-foil numbers, wax seals */
+[data-skin="me"] .atmo i{display:block;inset:0}
+[data-skin="me"] .atmo i:nth-child(1){background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%236b4e1e' stroke-opacity='.09' stroke-width='1.2'%3E%3Cpath d='M80 300c0-120 90-190 210-190s230 70 230 190-110 210-230 210S80 420 80 300z'/%3E%3Cpath d='M130 300c0-90 70-145 160-145s180 55 180 145-80 160-180 160-160-70-160-160z'/%3E%3Cpath d='M185 300c0-60 45-95 105-95s125 35 125 95-55 105-125 105-105-45-105-105z'/%3E%3Cpath d='M240 300c0-30 22-48 50-48s65 18 65 48-25 52-65 52-50-22-50-52z'/%3E%3Cpath d='M-40 80c80-30 160 20 240-10s160-60 260-20 120 10 180-10'/%3E%3Cpath d='M-40 560c90-20 170 30 260 0s170-50 260-10 100 20 160 0'/%3E%3C/g%3E%3C/svg%3E") 0 0/600px 600px}
+[data-skin="me"] .atmo i:nth-child(2){background:radial-gradient(ellipse at 50% 35%,transparent 45%,rgba(70,35,5,.42) 100%);animation:candle 5s ease-in-out infinite}
+@keyframes candle{0%,100%{opacity:1}22%{opacity:.82}40%{opacity:.95}61%{opacity:.78}80%{opacity:.92}}
+[data-skin="me"] .head h1::first-letter{font-size:1.45em;color:#8c1c13;text-shadow:1px 1px 0 #d4a640,2px 2px 0 rgba(70,40,5,.35)}
+[data-skin="me"] .head{position:relative;padding-bottom:22px}
+[data-skin="me"] .head::after{content:"❧ ✦ ☙";position:absolute;left:0;bottom:0;pointer-events:none;color:#b8860b;letter-spacing:.7em;font-size:14px}
+[data-skin="me"] .tile{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),var(--tile-bg)}
+[data-skin="me"] .t1{--tile-bg:linear-gradient(150deg,#2F5D3A,#1B3A23)} [data-skin="me"] .t2{--tile-bg:linear-gradient(150deg,#8C1C13,#5A0F0A)} [data-skin="me"] .t3{--tile-bg:linear-gradient(150deg,#1F4E5F,#12303B)} [data-skin="me"] .t4{--tile-bg:linear-gradient(150deg,#E3B64A,#B8860B)}
+[data-skin="me"] .tile:not(.t4) .big{background:linear-gradient(180deg,#fff6d0,#e9c25a 46%,#a8780f 54%,#f6dd8a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35))}
+[data-skin="me"] nav.tabs button[aria-current="page"]{background:radial-gradient(circle at 35% 30%,#b0352a,#7a0f0a 75%);color:#f6dd8a;box-shadow:0 0 0 2px #d4a640}
+[data-skin="me"] .grid>.card:first-child{position:relative}
+[data-skin="me"] .grid>.card:first-child::after{content:"✦";position:absolute;top:-12px;right:18px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 30%,#c4402e,#7a0f0a 70%);border:2px solid #d4a640;color:#f3d67a;font-size:14px;box-shadow:0 3px 5px rgba(60,30,0,.45)}
+
+/* Breaking Bad: drifting lab smoke, a hazmat stripe, crystal shards, beaker-marked cards, a buzzing light */
+[data-skin="bb"] .atmo i:nth-child(1){display:block;inset:-20% -40%;background:radial-gradient(ellipse 40% 30% at 30% 60%,rgba(170,230,190,.10),transparent 70%),radial-gradient(ellipse 35% 25% at 70% 30%,rgba(140,220,170,.08),transparent 70%),radial-gradient(ellipse 30% 22% at 55% 85%,rgba(200,240,210,.07),transparent 70%);animation:smoke 34s ease-in-out infinite alternate}
+@keyframes smoke{to{transform:translate(18%,-6%)}}
+[data-skin="bb"] .atmo i:nth-child(2){display:block;right:-40px;bottom:-30px;width:260px;height:300px;opacity:.22;background:linear-gradient(160deg,#d9f8ff,#3FD0F5 45%,#1a6f9e);clip-path:polygon(40% 100%,30% 30%,42% 0,52% 32%,48% 100%,55% 100%,62% 22%,74% 5%,78% 40%,66% 100%,72% 100%,86% 48%,96% 38%,92% 70%,82% 100%)}
+[data-skin="bb"] .top::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:6px;background:repeating-linear-gradient(-45deg,#F2C230 0 12px,#151200 12px 24px);opacity:.9}
+[data-skin="bb"] .card{background:repeating-linear-gradient(180deg,transparent 0 15px,rgba(75,195,92,.4) 15px 16px) left 0 top 14px/10px calc(100% - 28px) no-repeat,var(--surface)}
+[data-skin="bb"] .tile .big{text-shadow:0 0 14px rgba(63,208,245,.55)}
+[data-skin="bb"] .logo b{animation:buzz 6s linear infinite}
+@keyframes buzz{0%,91%,93%,96%,100%{opacity:1}92%,95%{opacity:.35}}
+
+/* Berserk: embers in the dark, a blood-red flash now and then, claw slashes, dripping titles, scarred steel */
+[data-skin="bk"] .atmo i:nth-child(1){display:block;left:0;right:0;top:-100%;height:200%;opacity:.55;background:radial-gradient(circle,#ffb070 0,rgba(255,110,40,.9) 1.6px,transparent 3.2px) 20px 40px/110px 90px,radial-gradient(circle,rgba(255,60,30,.85) 1.8px,transparent 3.4px) 70px 10px/160px 140px,radial-gradient(circle,rgba(255,190,110,.8) 1.1px,transparent 2.4px) 40px 80px/80px 120px;animation:members 14s linear infinite}
+[data-skin="bk"] .atmo i:nth-child(2){display:block;inset:0;opacity:0;background:radial-gradient(ellipse at 82% 0%,rgba(255,40,30,.55),transparent 60%);animation:bloodflash 11s linear infinite}
+@keyframes bloodflash{0%,90%,100%{opacity:0}91%{opacity:.9}92.5%{opacity:.1}94%{opacity:.6}97%{opacity:0}}
+[data-skin="bk"] .card{position:relative}
+[data-skin="bk"] .grid>.card::after{content:"";position:absolute;right:16px;top:12px;width:46px;height:52px;pointer-events:none;
+  background:linear-gradient(118deg,transparent 38%,rgba(212,38,30,.55) 40%,transparent 45%),linear-gradient(118deg,transparent 52%,rgba(212,38,30,.45) 54%,transparent 59%),linear-gradient(118deg,transparent 66%,rgba(212,38,30,.35) 68%,transparent 73%)}
+[data-skin="bk"] .head h1{position:relative;padding-bottom:16px}
+[data-skin="bk"] .head h1::after{content:"";position:absolute;left:2px;bottom:0;width:min(260px,70%);height:16px;background:linear-gradient(#b3121b,#b3121b) 0 0/100% 3px no-repeat,radial-gradient(circle at 50% 0,#b3121b 5px,transparent 6px) 6px 0/38px 16px repeat-x,radial-gradient(ellipse 3px 9px at 50% 0,#8a0b12 99%,transparent) 22px 0/53px 14px repeat-x}
+[data-skin="bk"] .tile{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.04 .5' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),var(--tile-bg)}
+[data-skin="bk"] .t1{--tile-bg:linear-gradient(160deg,#5e0b10,#1a0707)} [data-skin="bk"] .t2{--tile-bg:linear-gradient(160deg,#2b2524,#0e0b0b)} [data-skin="bk"] .t3{--tile-bg:linear-gradient(160deg,#3a3f44,#121416)} [data-skin="bk"] .t4{--tile-bg:linear-gradient(160deg,#4a3c22,#16110a)}
+[data-skin="bk"] .tile .big{text-shadow:0 0 18px rgba(255,59,48,.45),0 2px 0 #000}
+
+/* Seven: film grain, a desk lamp that flickers, case-file stamps, paper clips, scribbled underlines */
+[data-skin="sv"] .atmo{z-index:30}
+[data-skin="sv"] .atmo i:nth-child(1){display:block;inset:-50%;opacity:.13;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .9 0 0 0 0 .85 0 0 0 0 .7 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/220px 220px;animation:grain .6s steps(5) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}60%{transform:translate(-6%,-2%)}80%{transform:translate(5%,4%)}100%{transform:translate(0,0)}}
+[data-skin="sv"] .atmo i:nth-child(2){display:block;inset:0;background:radial-gradient(ellipse 70% 55% at 50% -5%,rgba(255,225,160,.14),transparent 70%);animation:lamp 8s linear infinite}
+@keyframes lamp{0%,40%,44%,47%,100%{opacity:1}42%{opacity:.25}45.5%{opacity:.5}70%{opacity:.85}}
+[data-skin="sv"] .head>div:first-child{position:relative;padding-right:118px}
+[data-skin="sv"] .head>div:first-child::after{content:"EVIDENCE";position:absolute;top:4px;right:0;pointer-events:none;padding:2px 10px;border:3px solid #8E1B12;color:#8E1B12;font:400 18px "Special Elite",monospace;letter-spacing:.18em;transform:rotate(-9deg);opacity:.75;mix-blend-mode:screen}
+[data-skin="sv"] .head h1{padding-bottom:10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='14' viewBox='0 0 300 14'%3E%3Cpath d='M2 8C40 3 70 12 110 6s80 4 120-1 50 6 66 2M10 11c50-5 90 2 140-2s90 3 140-3' fill='none' stroke='%238E1B12' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") left bottom/min(300px,80%) 14px no-repeat}
+[data-skin="sv"] .grid>.card{position:relative}
+[data-skin="sv"] .grid>.card:nth-child(odd)::after{content:"";position:absolute;top:-14px;right:28px;width:22px;height:54px;pointer-events:none;transform:rotate(8deg);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='54' viewBox='0 0 22 54'%3E%3Cpath d='M15 18V9a4 4 0 0 0-8 0v34a6 6 0 0 0 12 0V12' fill='none' stroke='%23a7a9ad' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+@media (max-width:760px){[data-skin="sv"] .head>div:first-child{padding-right:84px}[data-skin="sv"] .head>div:first-child::after{font-size:13px;top:0}}
+
 /* phone client list: compact rows that open in place */
 .clist{display:flex;flex-direction:column;gap:8px}
 .crow{background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);overflow:hidden;transition:border-color .2s,box-shadow .2s}
@@ -631,6 +700,7 @@ button,a,input,select{touch-action:manipulation}
 </head>
 <body>
 <div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="atmo" aria-hidden="true"><i></i><i></i></div>
 <header class="top">
   <div class="wrap">
     <div class="brand">
