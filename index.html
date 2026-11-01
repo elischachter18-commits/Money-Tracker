@@ -1,0 +1,1394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Money Tracker">
+<meta name="theme-color" content="#070B1A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Money Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700;800&family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Archivo+Black&family=Barlow:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600;700&family=Pirata+One&family=Spectral:wght@400;600;800&family=Special+Elite&family=Courier+Prime:wght@400;700&family=Reenie+Beanie&display=swap">
+<style>
+/* Layout: sticky brand + pill nav, then a bold KPI band of four colour tiles, then cards in an auto-fit grid. */
+:root{
+  --bg:#F4F2FF; --surface:#FFFFFF; --surface-2:#ECE9FB; --ink:#17142E; --muted:#5F5A80; --line:#DDD8F3;
+  --magenta:#E3226B; --amber:#F29A00; --teal:#0EA894; --violet:#5B3DF0;
+  --good:#0B9467; --bad:#D9184F; --on-tile:#FFFFFF; --on-amber:#241500;
+  --shadow:0 10px 30px -12px rgba(40,24,120,.25);
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:18px;
+  /* text that sits on the page ground (not on cards), button colours, label face: themes can split these from --ink */
+  --on-bg:var(--ink); --on-bg-muted:var(--muted); --btn-bg:var(--ink); --btn-fg:var(--bg); --f-label:var(--f-body);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#100E24; --surface:#1A1838; --surface-2:#252252; --ink:#F2F0FF; --muted:#A7A2CE; --line:#312D62;
+  --magenta:#FF4D8D; --amber:#FFB627; --teal:#22D3B6; --violet:#8B73FF;
+  --good:#34D399; --bad:#FF5C8A; --shadow:0 12px 32px -14px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#100E24; --surface:#1A1838; --surface-2:#252252; --ink:#F2F0FF; --muted:#A7A2CE; --line:#312D62;
+  --magenta:#FF4D8D; --amber:#FFB627; --teal:#22D3B6; --violet:#8B73FF;
+  --good:#34D399; --bad:#FF5C8A; --shadow:0 12px 32px -14px rgba(0,0,0,.7); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--on-bg);font-family:var(--f-body);font-size:15px;line-height:1.45;min-height:100vh}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.glow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.glow i{position:absolute;width:46vmax;height:46vmax;border-radius:50%;filter:blur(80px);opacity:.18}
+.glow i:nth-child(1){background:var(--magenta);top:-20vmax;left:-12vmax}
+.glow i:nth-child(2){background:var(--violet);top:-16vmax;right:-18vmax}
+.glow i:nth-child(3){background:var(--teal);bottom:-30vmax;left:30vw;opacity:.1}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--violet);outline-offset:2px;border-radius:8px}
+.num,.tab-num{font-variant-numeric:tabular-nums}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-direction:column;gap:10px;padding-block:12px 10px}
+.brand{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:18px;letter-spacing:-.01em}
+.logo b{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:conic-gradient(from 210deg,var(--magenta),var(--amber),var(--teal),var(--violet),var(--magenta));color:#fff;font-size:17px}
+.brand-r{display:flex;align-items:center;gap:8px}
+.logo small{display:block;font-family:var(--f-label);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--on-bg-muted)}
+.logo small:empty{display:none}
+@media (max-width:440px){.status>span{display:none}.status{padding:8px}}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:5px 11px;border-radius:99px;white-space:nowrap}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status.ok i{background:var(--good)} .status.busy i{background:var(--amber);animation:pulse 1s infinite} .status.local i{background:var(--amber)}
+@keyframes pulse{50%{opacity:.3}}
+nav.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:none;border:0;background:transparent;color:var(--on-bg-muted);font-weight:700;font-size:14px;padding:8px 14px;border-radius:99px;cursor:pointer;transition:background .2s,color .2s}
+nav.tabs button:hover{background:var(--surface-2);color:var(--ink)}
+nav.tabs button[aria-current="page"]{background:var(--btn-bg);color:var(--btn-fg)}
+
+main{padding-block:22px 80px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(24px,4.4vw,36px);letter-spacing:-.02em;line-height:1.1}
+h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.02em}
+.eyebrow{font-family:var(--f-label);font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--muted);max-width:62ch;margin:6px 0 0}
+.head{color:var(--on-bg)} .head .eyebrow,.head .lede,.view>.hint{color:var(--on-bg-muted)}
+.card,.level,.item,.line-item,.tscroll,.banner,.guide button,.panel{color:var(--ink)}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;font-weight:800;font-size:14px;padding:11px 18px;border-radius:99px;background:var(--btn-bg);color:var(--btn-fg);transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.btn.danger{background:transparent;color:var(--bad);border:1.5px solid var(--bad)}
+.btn.danger.armed{background:var(--bad);color:#fff}
+.btn.sm{padding:7px 13px;font-size:13px}
+
+/* example banner */
+.banner{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;border-radius:var(--r);background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--amber) 16%,var(--surface)) 0 14px,color-mix(in srgb,var(--amber) 9%,var(--surface)) 14px 28px);border:1.5px dashed var(--amber)}
+.banner p{margin:0;font-weight:600}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.tile{position:relative;overflow:hidden;border-radius:22px;padding:18px 18px 16px;color:var(--on-tile);min-height:150px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;box-shadow:var(--shadow);transition:transform .25s}
+.tile:hover{transform:translateY(-3px) rotate(-.3deg)}
+.tile::after{content:"";position:absolute;width:160px;height:160px;border-radius:50%;right:-50px;top:-60px;background:rgba(255,255,255,.16)}
+.tile .eyebrow{color:inherit;opacity:.85}
+.tile .big{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,3.3vw,36px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.tile .sub{font-size:13.5px;font-weight:600;opacity:.92}
+.t1{background:linear-gradient(135deg,var(--magenta),#FF7A45)}
+.t2{background:linear-gradient(135deg,var(--violet),#C64BD9)}
+.t3{background:linear-gradient(135deg,#0B8F8A,var(--teal))}
+.t4{background:linear-gradient(135deg,var(--amber),#FFD34D);color:var(--on-amber)}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:420px){.tile{min-height:128px;padding:15px}.tile .big{font-size:24px}}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border-bottom:0}
+.row span:first-child{color:var(--muted);font-weight:500}
+.row strong{font-variant-numeric:tabular-nums;font-weight:800;text-align:right}
+.row.hl strong{font-size:18px}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 10px;border-radius:99px;background:var(--surface-2);color:var(--ink);white-space:nowrap}
+.chip.good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.chip.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.chip.warn{background:color-mix(in srgb,var(--amber) 22%,transparent);color:color-mix(in srgb,var(--amber) 60%,var(--ink))}
+.chip.vio{background:color-mix(in srgb,var(--violet) 18%,transparent);color:var(--violet)}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.chart-box{position:relative;height:250px}
+.chart-box.sm{height:200px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:14px;align-items:center}
+@media (max-width:420px){.split{grid-template-columns:1fr}}
+
+/* milestones */
+.ms{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.level{border-radius:var(--r);padding:18px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.level.won{border-color:var(--amber);background:linear-gradient(160deg,color-mix(in srgb,var(--amber) 20%,var(--surface)),var(--surface))}
+.level .reward{font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:-.01em;display:flex;gap:10px;align-items:center}
+.level .reward em{font-style:normal;font-size:28px}
+.bar{height:16px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;width:var(--p);border-radius:inherit;background:linear-gradient(90deg,var(--magenta),var(--amber));animation:grow 1.1s cubic-bezier(.2,.8,.2,1) both;position:relative}
+.bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shine 2.6s 1.1s infinite;transform:translateX(-100%)}
+@keyframes grow{from{width:0}}
+@keyframes shine{to{transform:translateX(100%)}}
+.level .meta{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px;gap:10px;flex-wrap:wrap}
+.best{display:flex;flex-wrap:wrap;gap:8px 26px;align-items:baseline}
+.best .big{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,46px);letter-spacing:-.03em;background:linear-gradient(90deg,var(--magenta),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* lists */
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.item{text-align:left;width:100%;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;display:flex;flex-direction:column;gap:10px;transition:transform .18s,border-color .18s,box-shadow .18s}
+.item:hover{transform:translateY(-2px);border-color:var(--violet);box-shadow:var(--shadow)}
+.item-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.item-h b{font-size:16.5px;font-weight:800}
+.biz{display:flex;flex-direction:column;gap:1px;font-size:13.5px;font-weight:600;color:var(--muted);overflow-wrap:anywhere}
+.biz .where{font-weight:500}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kv div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.kv small{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kv span{font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.line-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;text-align:left;width:100%;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;transition:border-color .18s,transform .18s}
+.line-item:hover{border-color:var(--violet);transform:translateX(2px)}
+.date-badge{display:grid;place-items:center;width:48px;height:48px;border-radius:13px;background:var(--surface-2);line-height:1;text-align:center}
+.date-badge b{font-family:var(--f-display);font-size:16px}
+.date-badge small{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted)}
+.line-item .what{display:flex;flex-direction:column;gap:3px;min-width:0}
+.line-item .what b{overflow-wrap:anywhere}
+.line-item .amt{font-weight:800;font-variant-numeric:tabular-nums;font-size:16px}
+.stack{display:flex;flex-direction:column;gap:8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+
+/* tables */
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;text-align:right;padding:12px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface);position:sticky;top:0}
+td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+tr:last-child td{border-bottom:0}
+tr.next td{background:color-mix(in srgb,var(--violet) 10%,transparent)}
+tr.future td{color:var(--muted)}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--surface-2)}
+td input{width:110px;text-align:right;padding:6px 8px;border-radius:9px;border:1.5px solid color-mix(in srgb,var(--violet) 45%,var(--line));background:color-mix(in srgb,var(--violet) 7%,var(--surface));font-variant-numeric:tabular-nums;color:var(--violet);font-weight:700}
+td input:disabled{opacity:.5}
+
+/* forms */
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12.5px;font-weight:800;color:var(--muted)}
+.field input,.field select{width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--violet);font-weight:700;min-width:0}
+.field input:focus,.field select:focus{border-color:var(--violet);outline:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--violet) 18%,transparent)}
+.field small{font-size:12px;color:var(--muted)}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fgrid .wide{grid-column:1/-1}
+@media (max-width:460px){.fgrid{grid-template-columns:1fr}}
+.typein{color:var(--violet);font-weight:800}
+
+.sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,8,30,.45);backdrop-filter:blur(3px);animation:fade .2s both}
+.sheet .panel{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--surface);border-radius:24px 24px 0 0;padding:20px max(18px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;animation:rise .28s cubic-bezier(.2,.8,.2,1) both;border:1px solid var(--line)}
+@media (min-width:700px){.sheet{align-items:center}.sheet .panel{border-radius:24px}}
+.panel-f{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.err{color:var(--bad);font-weight:700;font-size:13px;margin:0}
+@keyframes fade{from{opacity:0}} @keyframes rise{from{transform:translateY(40px);opacity:0}}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--surface);padding:11px 18px;border-radius:99px;font-weight:700;z-index:60;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:8px}
+.guide button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:11px 14px;cursor:pointer;transition:border-color .18s}
+.guide button:hover{border-color:var(--violet)}
+.guide b{font-size:14px} .guide span{font-size:12.5px;color:var(--muted)}
+.empty{padding:26px;text-align:center;border:1.5px dashed var(--line);border-radius:var(--r);color:var(--muted);background:var(--surface)}
+.loading{display:grid;gap:14px}
+.loading div{height:120px;border-radius:var(--r);background:linear-gradient(90deg,var(--surface),var(--surface-2),var(--surface));background-size:200% 100%;animation:sk 1.3s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.view{animation:viewIn .35s cubic-bezier(.2,.8,.2,1) both;display:flex;flex-direction:column;gap:22px}
+@keyframes viewIn{from{opacity:.001;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ---------- theme picker ---------- */
+.skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:12px}
+.skin-opt{position:relative;text-align:left;cursor:pointer;border-radius:16px;padding:16px;min-height:132px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;border:2px solid transparent;overflow:hidden;transition:transform .2s,border-color .2s}
+.skin-opt:hover{transform:translateY(-3px)}
+.skin-opt[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ink)}
+.skin-opt b{font-size:22px;line-height:1.1}
+.skin-opt span{font-size:12.5px;opacity:.85}
+.skin-opt .dots{display:flex;gap:6px}
+.skin-opt .dots i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.35)}
+.skin-opt .on{position:absolute;top:10px;right:12px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.tile::before{content:none}
+.el{display:inline-block;position:relative;line-height:1;text-transform:none;border:2px solid #F2FFF4;padding:.28em .16em .08em;margin-right:3px;background:linear-gradient(160deg,#2a7a3c,#11401d);color:#F2FFF4}
+.el sup{position:absolute;top:3px;left:4px;font-family:"IBM Plex Mono",monospace;font-size:.28em;font-weight:600;line-height:1}
+[data-skin="bb"] .head h1{text-wrap:wrap}
+
+/* ================= MIDDLE EARTH: a parchment ledger from a hobbit-hole study ================= */
+:root[data-skin="me"]{
+  --bg:#E8DAB8; --surface:#F4E9CF; --surface-2:#E4D3AA; --ink:#2B1D0E; --muted:#6B5432; --line:#C7AC76;
+  --magenta:#8C1C13; --amber:#B8860B; --teal:#2F5D3A; --violet:#1F4E5F; --good:#2F6B3A; --bad:#8C1C13;
+  --on-tile:#F7EBC9; --on-amber:#2B1D0E; --btn-bg:#2F4A2B; --btn-fg:#F3E3B5;
+  --f-display:"Cinzel",Georgia,serif; --f-body:"EB Garamond",Georgia,serif; --f-label:"Cinzel",Georgia,serif;
+  --r:6px; --shadow:0 10px 24px -14px rgba(70,45,10,.55); color-scheme:light}
+[data-skin="me"] body{font-size:17px;background:
+  radial-gradient(ellipse at 18% 8%,rgba(255,250,228,.75),transparent 45%),
+  radial-gradient(ellipse at 85% 95%,rgba(122,80,28,.22),transparent 55%),
+  radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(92,60,18,.38)),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+  #E8DAB8;background-attachment:fixed}
+[data-skin="me"] .num,[data-skin="me"] table,[data-skin="me"] .row strong,[data-skin="me"] .kv span{font-variant-numeric:lining-nums tabular-nums}
+[data-skin="me"] .logo b{background:transparent;border:3px double #B8860B;border-radius:50%;color:#8C6A12;font-family:"Cinzel",serif;box-shadow:0 0 12px rgba(184,134,11,.45)}
+[data-skin="me"] h1{font-weight:900;letter-spacing:.02em}
+[data-skin="me"] h2{font-family:"Cinzel",serif;font-weight:700;font-size:16px;letter-spacing:.08em;text-transform:uppercase}
+[data-skin="me"] h2::before{content:"❧ ";color:#B8860B}
+[data-skin="me"] .card,[data-skin="me"] .level,[data-skin="me"] .tscroll,[data-skin="me"] .item,[data-skin="me"] .line-item{border:1px solid #B8955A;box-shadow:inset 0 0 0 4px var(--surface),inset 0 0 0 5px rgba(184,134,11,.55),var(--shadow)}
+[data-skin="me"] .eyebrow{font-weight:700;letter-spacing:.16em}
+[data-skin="me"] .tile{border-radius:8px;border:1px solid #C9A24A;box-shadow:inset 0 0 0 5px rgba(0,0,0,.18),inset 0 0 0 6px rgba(242,214,140,.55),var(--shadow)}
+[data-skin="me"] .tile::after{width:220px;height:220px;right:-80px;top:-90px;background:radial-gradient(circle,rgba(255,226,150,.28),transparent 65%)}
+[data-skin="me"] .tile .big{font-weight:700;letter-spacing:0;font-variant-numeric:lining-nums tabular-nums}
+[data-skin="me"] .t1{background:linear-gradient(150deg,#2F5D3A,#1B3A23)}
+[data-skin="me"] .t2{background:linear-gradient(150deg,#8C1C13,#5A0F0A)}
+[data-skin="me"] .t3{background:linear-gradient(150deg,#1F4E5F,#12303B)}
+[data-skin="me"] .t4{background:linear-gradient(150deg,#E3B64A,#B8860B)}
+[data-skin="me"] .bar{background:#DCC89A;border:1px solid #B8955A}
+[data-skin="me"] .bar i{background:linear-gradient(90deg,#8C6A12,#E9C25A,#B8860B)}
+[data-skin="me"] .best .big{background:linear-gradient(90deg,#8C6A12,#D9A92C);-webkit-background-clip:text;background-clip:text}
+[data-skin="me"] .chip{border-radius:4px}
+[data-skin="me"] .glow{display:none}
+[data-skin="me"] nav.tabs button{border-radius:4px;font-family:"Cinzel",serif;letter-spacing:.04em}
+
+/* ================= BREAKING BAD: a desert lab, element tiles and blue crystal ================= */
+:root[data-skin="bb"]{
+  --bg:#06120C; --surface:#0D1F15; --surface-2:#163021; --ink:#E6F2E4; --muted:#8FAE97; --line:#24472F;
+  --magenta:#E2622B; --amber:#F2C230; --teal:#3FD0F5; --violet:#4BC35C; --good:#4BC35C; --bad:#FF5A3C;
+  --on-tile:#F2FFF4; --on-amber:#1A1400; --btn-bg:#F2C230; --btn-fg:#121000;
+  --f-display:"Archivo Black","Arial Black",sans-serif; --f-body:"Barlow",system-ui,sans-serif; --f-label:"IBM Plex Mono",ui-monospace,monospace;
+  --r:4px; --shadow:0 14px 30px -14px rgba(0,0,0,.8); color-scheme:dark}
+[data-skin="bb"] body{background:
+  radial-gradient(ellipse at 15% -10%,rgba(75,195,92,.22),transparent 50%),
+  radial-gradient(ellipse at 100% 110%,rgba(226,98,43,.18),transparent 55%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64v33' fill='none' stroke='%234BC35C' stroke-opacity='.07' stroke-width='1.2'/%3E%3C/svg%3E"),
+  #06120C;background-attachment:fixed}
+[data-skin="bb"] .glow{display:none}
+[data-skin="bb"] .logo b{border-radius:3px;background:linear-gradient(160deg,#2a7a3c,#11401d);border:2px solid #E6F2E4;font-size:0;position:relative;width:38px;height:38px}
+[data-skin="bb"] .logo b::before{content:"Mo";font-family:"Archivo Black",sans-serif;font-size:17px;color:#F2FFF4}
+[data-skin="bb"] .logo b::after{content:"42";position:absolute;top:2px;left:3px;font:600 8px "IBM Plex Mono",monospace;color:#F2FFF4}
+[data-skin="bb"] h1{text-transform:uppercase;letter-spacing:-.01em}
+[data-skin="bb"] h2{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+[data-skin="bb"] .card,[data-skin="bb"] .level,[data-skin="bb"] .tscroll{border-top:3px solid var(--violet)}
+[data-skin="bb"] .eyebrow{font-weight:600;letter-spacing:.1em}
+[data-skin="bb"] .tile{border-radius:4px;border:2px solid rgba(242,255,244,.85);padding-top:30px}
+[data-skin="bb"] .tile::before{content:attr(data-z);position:absolute;top:10px;left:14px;font:600 12px "IBM Plex Mono",monospace;opacity:.9}
+[data-skin="bb"] .tile::after{content:attr(data-sym);background:none;width:auto;height:auto;border-radius:0;top:6px;right:14px;font:400 52px/1 "Archivo Black",sans-serif;opacity:.22;color:inherit}
+[data-skin="bb"] .tile .big{font-family:"IBM Plex Mono",monospace;font-weight:700;letter-spacing:-.04em}
+[data-skin="bb"] .t1{background:linear-gradient(160deg,#2a7a3c,#0f3a1c)}
+[data-skin="bb"] .t2{background:linear-gradient(160deg,#1c86b0,#0a3550)}
+[data-skin="bb"] .t3{background:linear-gradient(160deg,#C8642A,#6A2C0E)}
+[data-skin="bb"] .t4{background:linear-gradient(160deg,#F2C230,#C99500);border-color:#1A1400}
+[data-skin="bb"] .bar{border-radius:2px;background:#0A1A11;border:1px solid var(--line)}
+[data-skin="bb"] .bar i{border-radius:0;background:repeating-linear-gradient(115deg,#3FD0F5 0 10px,#8BE6FF 10px 13px,#1E9FD0 13px 22px);box-shadow:0 0 14px rgba(63,208,245,.6)}
+[data-skin="bb"] .best .big{background:linear-gradient(90deg,#8BE6FF,#3FD0F5,#1E9FD0);-webkit-background-clip:text;background-clip:text;text-shadow:none}
+[data-skin="bb"] .chip,[data-skin="bb"] nav.tabs button,[data-skin="bb"] .btn,[data-skin="bb"] .status{border-radius:3px}
+[data-skin="bb"] nav.tabs button{font-family:"IBM Plex Mono",monospace;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+[data-skin="bb"] table,[data-skin="bb"] .row strong,[data-skin="bb"] .kv span,[data-skin="bb"] .line-item .amt{font-family:"IBM Plex Mono",monospace}
+
+/* ================= BERSERK: black iron, a red-rimmed eclipse, cut steel edges ================= */
+:root[data-skin="bk"]{
+  --bg:#090808; --surface:#141111; --surface-2:#211B1A; --ink:#E9E1D6; --muted:#9C9085; --line:#342B28;
+  --magenta:#B3121B; --amber:#B08D3C; --teal:#71808A; --violet:#D4261E; --good:#86B06A; --bad:#E0302A;
+  --on-tile:#F1E9DF; --on-amber:#F1E9DF; --btn-bg:#A3121A; --btn-fg:#F4ECE2;
+  --f-display:"Pirata One","Times New Roman",serif; --f-body:"Spectral",Georgia,serif; --f-label:"Spectral",Georgia,serif;
+  --r:0px; --shadow:0 18px 34px -16px rgba(0,0,0,.95); color-scheme:dark}
+[data-skin="bk"] body{background:
+  radial-gradient(circle at 86% 175px,#000 0 44px,rgba(230,35,30,.95) 46px,rgba(179,18,27,.5) 60px,rgba(120,10,15,.18) 110px,transparent 240px),
+  radial-gradient(ellipse at 50% 120%,rgba(110,8,12,.35),transparent 60%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.75' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .6 0 0 0 0 .55 0 0 0 0 .5 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+  #090808;background-attachment:fixed}
+[data-skin="bk"] .glow{display:none}
+[data-skin="bk"] .logo b{border-radius:0;background:#0b0909;border:1px solid #B3121B;color:#D4261E;font-family:"Pirata One",serif;font-size:24px;clip-path:polygon(0 0,80% 0,100% 20%,100% 100%,20% 100%,0 80%)}
+[data-skin="bk"] .logo b{font-size:0}
+[data-skin="bk"] .logo b::after{content:"†";font:400 26px "Pirata One",serif;color:#D4261E;position:static;width:auto;height:auto;background:none}
+[data-skin="bk"] h1{font-weight:400;font-size:clamp(32px,5.6vw,50px);letter-spacing:.01em;text-shadow:0 2px 0 #000,0 0 22px rgba(179,18,27,.35)}
+[data-skin="bk"] h2{font-family:"Spectral",serif;font-weight:800;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:#C9BBAE}
+[data-skin="bk"] .card,[data-skin="bk"] .level,[data-skin="bk"] .item,[data-skin="bk"] .tscroll{border-radius:0;border-color:#3a2f2b;border-top:1px solid #6b1015;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));background:linear-gradient(180deg,#191414,#100D0D)}
+[data-skin="bk"] .tile{border-radius:0;border-left:4px solid #B3121B;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%)}
+[data-skin="bk"] .tile::after{background:linear-gradient(115deg,transparent 46%,rgba(220,30,30,.55) 47%,rgba(220,30,30,.1) 50%,transparent 51%);width:100%;height:100%;inset:0;border-radius:0}
+[data-skin="bk"] .tile .big{font-family:"Spectral",serif;font-weight:800;letter-spacing:-.02em}
+[data-skin="bk"] .tile .eyebrow{letter-spacing:.2em}
+[data-skin="bk"] .t1{background:linear-gradient(160deg,#5e0b10,#1a0707)}
+[data-skin="bk"] .t2{background:linear-gradient(160deg,#2b2524,#0e0b0b)}
+[data-skin="bk"] .t3{background:linear-gradient(160deg,#3a3f44,#121416)}
+[data-skin="bk"] .t4{background:linear-gradient(160deg,#4a3c22,#16110a)}
+[data-skin="bk"] .bar{border-radius:0;height:12px;background:#1a1313;border:1px solid #3a2f2b}
+[data-skin="bk"] .bar i{border-radius:0;background:linear-gradient(90deg,#3d0508,#B3121B 70%,#FF3B30)}
+[data-skin="bk"] .best .big{font-family:"Pirata One",serif;font-weight:400;background:linear-gradient(180deg,#F1E9DF,#B3121B);-webkit-background-clip:text;background-clip:text}
+[data-skin="bk"] .chip,[data-skin="bk"] nav.tabs button,[data-skin="bk"] .btn,[data-skin="bk"] .status,[data-skin="bk"] .line-item,[data-skin="bk"] td input,[data-skin="bk"] .field input,[data-skin="bk"] .field select{border-radius:0}
+[data-skin="bk"] nav.tabs button{text-transform:uppercase;letter-spacing:.12em;font-size:12.5px}
+[data-skin="bk"] .level.won{background:linear-gradient(160deg,rgba(179,18,27,.35),#100D0D)}
+
+/* ================= SEVEN: a killer's notebook, typed and scrawled, under one desk lamp ================= */
+:root[data-skin="sv"]{
+  --bg:#15130E; --surface:#D9CEB2; --surface-2:#C8BB98; --ink:#1C1812; --muted:#564B39; --line:#A8987A;
+  --magenta:#7A1A12; --amber:#8A6A2A; --teal:#3E4A3A; --violet:#22305A; --good:#3E5B2E; --bad:#8E1B12;
+  --on-tile:#1C1812; --on-amber:#1C1812; --on-bg:#D6CBAE; --on-bg-muted:#8F846B; --btn-bg:#6E140E; --btn-fg:#EFE5CB;
+  --f-display:"Special Elite","Courier New",monospace; --f-body:"Courier Prime","Courier New",monospace; --f-label:"Reenie Beanie","Comic Sans MS",cursive;
+  --r:2px; --shadow:0 18px 30px -12px rgba(0,0,0,.85); color-scheme:dark}
+[data-skin="sv"] body{background:
+  radial-gradient(ellipse at 50% -10%,rgba(214,190,130,.20),transparent 60%),
+  radial-gradient(ellipse at 50% 50%,transparent 45%,rgba(0,0,0,.6)),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.55' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .7 0 0 0 0 .65 0 0 0 0 .45 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+  #15130E;background-attachment:fixed}
+[data-skin="sv"] .glow{display:none}
+[data-skin="sv"] .top{border-bottom:1px solid #2c271d}
+[data-skin="sv"] .logo{font-family:"Special Elite",monospace;font-weight:400;letter-spacing:.06em}
+[data-skin="sv"] .logo b{border-radius:0;background:#D9CEB2;color:#6E140E;font-family:"Special Elite",monospace;font-size:13px;transform:rotate(-4deg);box-shadow:2px 3px 0 #000}
+[data-skin="sv"] .logo b{font-size:0}
+[data-skin="sv"] .logo b::after{content:"VII";font:400 13px "Special Elite",monospace;color:#6E140E}
+[data-skin="sv"] .logo small{font-size:17px;letter-spacing:0;color:#9C8E70}
+[data-skin="sv"] h1{font-weight:400;letter-spacing:.01em;text-shadow:0 0 1px currentColor,1px 1px 0 rgba(0,0,0,.6)}
+[data-skin="sv"] h2{font-family:"Special Elite",monospace;font-weight:400;font-size:16px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+[data-skin="sv"] .eyebrow{font-weight:400;text-transform:none;letter-spacing:0;font-size:21px;line-height:1}
+[data-skin="sv"] .hint,[data-skin="sv"] .kv small{font-family:"Reenie Beanie",cursive;font-size:19px;line-height:1.05;text-transform:none;letter-spacing:0}
+[data-skin="sv"] .card,[data-skin="sv"] .level,[data-skin="sv"] .item,[data-skin="sv"] .line-item,[data-skin="sv"] .tscroll,[data-skin="sv"] .panel{border-radius:1px;border-color:#B4A27E;background:
+  linear-gradient(90deg,transparent 30px,rgba(122,26,18,.35) 30px 31px,transparent 31px),
+  repeating-linear-gradient(transparent 0 25px,rgba(34,48,90,.16) 25px 26px),
+  radial-gradient(ellipse at 80% 20%,rgba(120,90,40,.18),transparent 40%),#D9CEB2;box-shadow:var(--shadow)}
+[data-skin="sv"] .card,[data-skin="sv"] .level{padding-left:44px}
+[data-skin="sv"] .grid>.card:nth-child(odd){transform:rotate(-.35deg)} [data-skin="sv"] .grid>.card:nth-child(even){transform:rotate(.3deg)}
+[data-skin="sv"] th{background:#CFC3A4}
+[data-skin="sv"] .tile{border-radius:0;color:#1C1812;padding-top:24px;box-shadow:3px 6px 18px rgba(0,0,0,.7)}
+[data-skin="sv"] .tile::after{content:"";width:86px;height:24px;top:-6px;left:50%;right:auto;transform:translateX(-50%) rotate(-3deg);border-radius:0;background:rgba(232,222,190,.55);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+[data-skin="sv"] .tile:nth-child(1){background:#E2D7BC;transform:rotate(-1.4deg)} [data-skin="sv"] .tile:nth-child(2){background:#D8CBA9;transform:rotate(.9deg)}
+[data-skin="sv"] .tile:nth-child(3){background:#E6DCC4;transform:rotate(-.6deg)} [data-skin="sv"] .tile:nth-child(4){background:#CFC09B;transform:rotate(1.3deg)}
+[data-skin="sv"] .tile:hover{transform:rotate(0) scale(1.02)}
+[data-skin="sv"] .tile .big{font-family:"Special Elite",monospace;font-weight:400;letter-spacing:-.02em}
+[data-skin="sv"] .tile .sub{font-family:"Reenie Beanie",cursive;font-size:20px;line-height:1;color:#6E140E}
+[data-skin="sv"] .bar{border-radius:0;background:transparent;border:1px solid #1C1812}
+[data-skin="sv"] .bar i{border-radius:0;background:repeating-linear-gradient(-45deg,#6E140E 0 2px,transparent 2px 5px)}
+[data-skin="sv"] .best .big{font-family:"Special Elite",monospace;font-weight:400;background:none;color:#6E140E}
+[data-skin="sv"] .chip{border-radius:0;background:#1C1812;color:#D9CEB2}
+[data-skin="sv"] .chip.good,[data-skin="sv"] .chip.bad,[data-skin="sv"] .chip.warn{background:transparent;border:1.5px solid currentColor;transform:rotate(-2deg)}
+[data-skin="sv"] .chip.bad{color:#8E1B12} [data-skin="sv"] .chip.good{color:#3E5B2E} [data-skin="sv"] .chip.warn{color:#6b4e12}
+[data-skin="sv"] nav.tabs button,[data-skin="sv"] .btn,[data-skin="sv"] .status{border-radius:0}
+[data-skin="sv"] nav.tabs button{font-family:"Special Elite",monospace;font-weight:400}
+[data-skin="sv"] .btn{font-family:"Special Elite",monospace;font-weight:400}
+[data-skin="sv"] td input,[data-skin="sv"] .field input,[data-skin="sv"] .field select{border-radius:0;background:rgba(255,255,255,.25);border-color:#8f7f5f;font-family:"Courier Prime",monospace}
+[data-skin="sv"] .banner{background:#D9CEB2;border-color:#6E140E}
+
+/* ================= phone app shell (all themes) ================= */
+*{-webkit-tap-highlight-color:transparent}
+button,a,input,select{touch-action:manipulation}
+.bnav,.handle{display:none}
+.fab{display:none}
+.pcards{display:flex;flex-direction:column;gap:12px}
+.pcard.next{box-shadow:0 0 0 2px var(--violet),var(--shadow)}
+.pcard.future{opacity:.88}
+.pdate{font-size:17px}
+.pin{margin-top:2px}
+.menu{display:flex;flex-direction:column;gap:6px}
+.menu button{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:11px 14px;cursor:pointer}
+.menu button[aria-current="page"]{border-color:var(--violet)}
+.menu .bic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:color-mix(in srgb,var(--violet) 14%,transparent);color:var(--violet)}
+.menu svg{width:22px;height:22px}
+.menu small{color:var(--muted);font-size:12.5px}
+.sheet-open body{overflow:hidden}
+.auth{max-width:440px;width:100%;margin:6vh auto 0;gap:18px}
+.signed-out nav.tabs,.signed-out .bnav,.signed-out .fab,.signed-out #skinBtn{display:none!important}
+@media (max-width:760px){
+  body{font-size:15px;overscroll-behavior-y:none}
+  nav.tabs{display:none}
+  .top .wrap{padding-block:10px}
+  .logo{font-size:16px}
+  main{padding-block:16px calc(118px + env(safe-area-inset-bottom,0px));gap:16px}
+  .view{gap:16px}
+  h1{font-size:clamp(22px,7vw,30px)}
+  .head>.btn[data-add]{display:none}
+  .bnav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);
+    padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  .bnav button{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--muted);font-size:11px;font-weight:700;padding:4px 0;cursor:pointer;font-family:var(--f-body)}
+  .bnav .bic{display:grid;place-items:center;width:52px;height:30px;border-radius:99px;transition:background .2s}
+  .bnav svg{width:23px;height:23px}
+  .bnav button[aria-current="page"]{color:var(--ink)}
+  .bnav button[aria-current="page"] .bic{background:color-mix(in srgb,var(--violet) 22%,transparent);color:var(--violet)}
+  .bnav button:active .bic{transform:scale(.9)}
+  .fab:not([hidden]){display:grid;place-items:center;position:fixed;z-index:41;width:58px;height:58px;border:0;border-radius:18px;cursor:pointer;
+    right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));
+    background:var(--btn-bg);color:var(--btn-fg);box-shadow:0 10px 24px -6px rgba(0,0,0,.45);transition:transform .15s}
+  .fab svg{width:28px;height:28px}
+  .fab:active{transform:scale(.92)}
+  .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+  .kpis{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;scrollbar-width:none;
+    margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:4px max(16px,env(safe-area-inset-left,0px)) 12px;scroll-padding-inline:max(16px,env(safe-area-inset-left,0px))}
+  .kpis::-webkit-scrollbar{display:none}
+  .kpis .tile{flex:0 0 80%;scroll-snap-align:start;min-height:140px}
+  .chart-box{height:220px}
+  .card{padding:16px}
+  .handle{display:block;width:44px;height:5px;border-radius:99px;background:var(--line);margin:-6px auto 2px;flex:none}
+  .sheet .panel{max-height:88vh;border-radius:22px 22px 0 0}
+  .field input,.field select,td input{font-size:16px}
+  .item:hover,.line-item:hover,.tile:hover{transform:none}
+}
+</style>
+
+</head>
+<body>
+<div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo"><b>$</b><div>Money Tracker<small id="tagline"></small></div></div>
+      <div class="brand-r"><span id="status" class="status"><i></i><span>Connecting…</span></span><button class="btn sm ghost" id="skinBtn" data-skins>Theme</button></div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  </div>
+</header>
+<div class="wrap"><main id="main"><div class="loading"><div></div><div></div></div></main></div>
+<nav class="bnav" id="bnav" aria-label="Sections"></nav>
+<button class="fab" id="fab" aria-label="Add" hidden></button>
+<div id="sheet" class="sheet" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+/* ============ date + number helpers (dates are Excel-style day serials so the maths matches the workbook) ============ */
+const DAY = 86400000, NONE = 99999;
+const mk = (y, m, d) => Date.UTC(y, m - 1, d) / DAY + 25569;
+const ser = s => { if (!s) return null; const [y, m, d] = String(s).split('-').map(Number); return d ? mk(y, m, d) : (m ? mk(y, m, 1) : null); };
+const ymd = s => { const t = new Date((s - 25569) * DAY); return [t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate()]; };
+const isoOf = s => new Date((s - 25569) * DAY).toISOString().slice(0, 10);
+const edate = (s, n) => { const [y, m, d] = ymd(s); const t = m - 1 + n, yy = y + Math.floor(t / 12), mm = ((t % 12) + 12) % 12 + 1; return mk(yy, mm, Math.min(d, ymd(mk(yy, mm + 1, 0))[2])); };
+const eomonth = s => { const [y, m] = ymd(s); return mk(y, m + 1, 0); };
+const todaySerial = () => { const n = new Date(); return mk(n.getFullYear(), n.getMonth() + 1, n.getDate()); };
+const blank = v => v === null || v === undefined || v === '';
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const sum = (a, f) => a.reduce((t, x) => t + f(x), 0);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $0 = n => (n < -0.0049 ? '-' : '') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
+const $2 = n => (n < -0.0049 ? '-' : '') + '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = (n, d = 0) => (n * 100).toFixed(d) + '%';
+const dfmt = (s, o) => s == null ? '—' : new Date((s - 25569) * DAY).toLocaleDateString('en-US', { timeZone: 'UTC', ...o });
+const dShort = s => dfmt(s, { month: 'short', day: 'numeric' });
+const dLong = s => dfmt(s, { month: 'short', day: 'numeric', year: 'numeric' });
+const dMonth = s => dfmt(s, { month: 'short', year: 'numeric' });
+const dMonthLong = s => dfmt(s, { month: 'long', year: 'numeric' });
+const ordinal = d => d + ((d % 100 >= 11 && d % 100 <= 13) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[d % 10] || 'th'));
+const $k = v => Math.abs(v) >= 1000 ? (v < 0 ? '-' : '') + '$' + (Math.abs(v) / 1000).toFixed(Math.abs(v) % 1000 ? 1 : 0) + 'k' : $0(v);
+
+/* ============ settings + categories ============ */
+const DEFAULTS = {
+  commNew: 0.15, commRef: 0.20, commRecur: 0.15, cycle: 28, launchDelay: 28,
+  firstPayday: '2026-10-15', taxRate: 0.30,
+  milestones: [{ amount: 10000, reward: 'Level 1 reward', icon: '🎯' }, { amount: 30000, reward: 'Level 2 reward', icon: '🏆' }]
+};
+const CLIENT_TYPES = ['New', 'Referral', 'Upsell'];
+const EXP_CATS = ['Equipment', 'Software', 'Ads/Marketing', 'Phone/Internet', 'Home office', 'Travel/Mileage', 'Education', 'Other', 'From old sheet'];
+
+/* ============ the engine: every workbook formula, sheet by sheet ============ */
+function compute(S, today) {
+  const st = S.settings, cyc = num(st.cycle) || 28, tax = num(st.taxRate);
+  const year = ymd(today)[0], jan1 = mk(year, 1, 1);
+
+  // Clients!I:Q
+  const clients = S.clients.map(c => {
+    const p1 = num(c.p1), p2 = blank(c.p2) ? p1 : num(c.p2), p3 = blank(c.p3) ? p2 : num(c.p3);
+    const signedS = ser(c.signed), launchS = ser(c.launch), cancelS = ser(c.cancel);
+    const ref = c.type === 'Referral' || c.type === 'Upsell';
+    const I = blank(c.p1) ? 0 : p1 * (ref ? st.commRef : st.commNew);
+    const J = p2 * st.commRecur, K = p3 * st.commRecur;
+    const P = cancelS ?? NONE, Q = launchS != null ? launchS + num(st.launchDelay) : NONE;
+    let next;
+    if (launchS == null) next = 'Add launch date';
+    else { const n = today <= Q ? Q : Q + cyc * Math.ceil((today - Q) / cyc); next = n < P ? n : 'Cancelled'; }
+    const N = launchS == null ? 0 : Math.max(0, Math.floor((Math.min(today, P - 1) - Q) / cyc) + 1);
+    const O = I + (N >= 1 ? J + (N - 1) * K : 0);
+    return { ...c, p1, p2, p3, signedS, launchS, cancelS, I, J, K, P, Q, L: launchS == null ? null : Q, next, N, O, active: P > today };
+  });
+
+  const expenses = S.expenses.map(e => ({ ...e, s: ser(e.date), amt: num(e.amount) }));
+  const others = S.others.map(o => ({ ...o, s: ser(o.date), amt: num(o.amount) }));
+  const expBetween = (a, b) => sum(expenses.filter(e => e.s != null && e.s >= a && e.s <= b), e => e.amt);
+
+  // Paydays sheet
+  const first = ser(st.firstPayday) ?? mk(year, 1, 15);
+  const monthsToToday = (ymd(today)[0] - ymd(first)[0]) * 12 + ymd(today)[1] - ymd(first)[1];
+  const nPay = Math.max(80, monthsToToday + 14);
+  const cnt = (t, c) => { const cap = t < c.P ? t : c.P - 1; return cap >= c.Q ? Math.floor((cap - c.Q) / cyc) + 1 : 0; };
+  const paydays = [];
+  for (let i = 0; i < nPay; i++) {
+    const C = edate(first, i), B = edate(C, -1) + 1;
+    const D = sum(clients.filter(c => c.signedS != null && c.signedS >= B && c.signedS <= C), c => c.I);
+    const E = sum(clients, c => (cnt(C, c) - cnt(B - 1, c)) * c.K + (c.Q >= B && c.Q <= C && c.Q < c.P ? c.J - c.K : 0));
+    const F = sum(others.filter(o => o.s != null && o.s >= B && o.s <= C), o => o.amt);
+    const inp = S.paydays[isoOf(C)] || {};
+    const H = blank(inp.received) ? null : num(inp.received);
+    const moved = blank(inp.moved) ? null : num(inp.moved);
+    paydays.push({ i: i + 1, B, C, D, E, F, G: D + E + F, H, moved, owe: C >= today ? null : D + E + F - (H || 0) });
+  }
+  paydays.forEach(p => {
+    const y1 = mk(ymd(p.C)[0], 1, 1);
+    const ytdG = sum(paydays.filter(q => q.C >= y1 && q.C <= p.C), q => q.G);
+    const ytdE = expBetween(y1, p.C);
+    p.taxPut = tax * (Math.max(0, ytdG - ytdE) - Math.max(0, ytdG - p.G - ytdE));
+  });
+
+  // Business P&L months
+  const monthStart = s => { const [y, m] = ymd(s); return mk(y, m, 1); };
+  const marks = [monthStart(today), ...expenses.filter(e => e.s != null).map(e => monthStart(e.s)),
+    ...paydays.filter(p => p.H != null).map(p => monthStart(p.C))];
+  let mStart = Math.min(...marks), mEnd = Math.max(mk(year, 12, 1), ...marks);
+  const months = [];
+  for (let m = mStart; m <= mEnd; m = edate(m, 1)) {
+    const end = eomonth(m);
+    const inc = sum(paydays.filter(p => p.C >= m && p.C <= end), p => p.H || 0);
+    const ex = expBetween(m, end);
+    months.push({ m, inc, ex, profit: inc - ex });
+  }
+  months.forEach(r => {
+    const y1 = mk(ymd(r.m)[0], 1, 1);
+    r.ytd = sum(months.filter(q => q.m >= y1 && q.m <= r.m), q => q.profit);
+    r.takeHome = r.profit - Math.max(0, r.profit) * tax;
+  });
+  const years = [...new Set(months.map(r => ymd(r.m)[0]))].map(y => {
+    const rs = months.filter(r => ymd(r.m)[0] === y);
+    const inc = sum(rs, r => r.inc), ex = sum(rs, r => r.ex), profit = inc - ex;
+    return { y, inc, ex, profit, set: Math.max(0, profit) * tax };
+  });
+
+  // Net Worth sheet
+  const nwRows = S.nw.map(n => {
+    const filled = ['checking', 'mm', 'invest', 'fun'].some(k => !blank(n[k]));
+    const cash = num(n.checking) + num(n.mm), inv = num(n.invest) + num(n.fun);
+    return { ...n, s: ser(n.month), filled, cash, inv, total: cash + inv };
+  }).sort((a, b) => a.s - b.s);
+  nwRows.forEach(r => {
+    const prev = nwRows.find(q => q.s === edate(r.s, -1));
+    r.change = r.filled && prev && prev.filled ? r.total - prev.total : null;
+    r.changePct = r.change != null && prev.total !== 0 ? r.change / prev.total : null;
+    r.cashPct = r.filled && r.total !== 0 ? r.cash / r.total : null;
+  });
+  const nwLatest = [...nwRows].reverse().find(r => r.filled) || null;
+
+  // Milestones sheet
+  const takeMax = months.length ? Math.max(...months.map(r => r.takeHome)) : 0;
+  const best = Math.max(0, takeMax);
+  const bestMonth = best === 0 ? null : months.find(r => r.takeHome === takeMax).m;
+  const levels = (st.milestones || []).map(l => {
+    const goal = num(l.amount), frac = goal > 0 ? Math.min(1, best / goal) : 0, won = goal > 0 && best >= goal;
+    const wonAt = won ? Math.min(...months.filter(r => r.takeHome >= goal).map(r => r.m)) : null;
+    return { ...l, goal, frac, won, wonAt, toGo: goal - best };
+  });
+
+  // Settings!B14 helper + Dashboard
+  const nextIdx = paydays.filter(p => p.C <= today - 1).length;
+  const next = paydays[nextIdx] || null;
+  const ytdMonths = months.filter(r => r.m >= jan1 && r.m <= today);
+  const income = sum(ytdMonths, r => r.inc), costs = sum(ytdMonths, r => r.ex), profit = income - costs;
+  const shouldTax = Math.max(0, profit) * tax;
+  const movedTax = sum(paydays.filter(p => p.C >= jan1 && p.C <= today), p => p.moved || 0);
+  const named = clients.filter(c => !blank(c.name));
+  const every4 = sum(named.filter(c => c.P > today), c => c.K);
+  const dash = {
+    next, owed: sum(paydays, p => p.owe || 0),
+    income, costs, profit, shouldTax, movedTax, shortfall: Math.max(0, shouldTax - movedTax),
+    signed: named.length, waiting: named.filter(c => c.launchS == null).length,
+    every4, perYear: every4 * 365 / cyc, earned: sum(clients, c => c.O)
+  };
+  return { clients, expenses, others, paydays, nextIdx, months, years, nwRows, nwLatest, best, bestMonth, levels, dash, today };
+}
+
+/* ============ example data (only while the person's log is empty) ============ */
+function examples(st) {
+  const f = ser(st.firstPayday) ?? todaySerial(), d = n => isoOf(f + n);
+  const mStart = n => { const [y, m] = ymd(edate(f, n)); return isoOf(mk(y, m, 1)); };
+  return {
+    clients: [
+      { id: 'ex1', n: 1, signed: d(-12), name: 'Example: Dana Ruiz', business: 'Harbor Dental', city: 'Madison', state: 'WI', type: 'New', p1: 3000, launch: d(-8) },
+      { id: 'ex2', n: 2, signed: d(-4), name: 'Example: Mark Olsen', business: 'Peak Roofing', city: 'Denver', state: 'CO', type: 'Referral', p1: 3500, p2: 3500, p3: 4000, launch: d(2) },
+      { id: 'ex3', n: 3, signed: d(9), name: 'Example: Priya Shah', business: 'Lumen Yoga', city: 'Austin', state: 'TX', type: 'New', p1: 2500 }
+    ],
+    expenses: [
+      { id: 'ex4', date: d(-30), what: 'Example: CRM subscription', category: 'Software', amount: 49 },
+      { id: 'ex5', date: d(-2), what: 'Example: headset', category: 'Equipment', amount: 120 }
+    ],
+    others: [{ id: 'ex6', date: d(-1), desc: 'Example: launch bonus', amount: 250 }],
+    nw: [
+      { id: 'ex7', month: mStart(-3), checking: 2100, mm: 500, invest: 9000, fun: 300 },
+      { id: 'ex8', month: mStart(-2), checking: 1800, mm: 900, invest: 9400, fun: 260 },
+      { id: 'ex9', month: mStart(-1), checking: 2600, mm: 1300, invest: 9650, fun: 310 }
+    ],
+    paydays: { [d(0)]: { received: 700 } }
+  };
+}
+
+/* ============ themes ============ */
+const SKINS = [
+  { id: 'original', name: 'Original', tag: '', blurb: 'Bold colour, light or dark', font: 'Unbounded', bg: 'linear-gradient(135deg,#5B3DF0,#E3226B)', fg: '#fff', dots: ['#E3226B', '#F29A00', '#0EA894', '#5B3DF0'] },
+  { id: 'me', name: 'Middle Earth', tag: 'Red Book of Accounts', blurb: 'Parchment, gold leaf, forest green', font: 'Cinzel', bg: 'radial-gradient(circle at 30% 20%,#F6EBCF,#D9C291)', fg: '#2B1D0E', dots: ['#2F5D3A', '#8C1C13', '#1F4E5F', '#B8860B'] },
+  { id: 'bb', name: 'Breaking Bad', tag: 'Applied chemistry of cash', blurb: 'Lab green, element tiles, blue crystal', font: 'Archivo Black', bg: 'linear-gradient(160deg,#163021,#06120C)', fg: '#E6F2E4', dots: ['#4BC35C', '#3FD0F5', '#F2C230', '#E2622B'] },
+  { id: 'bk', name: 'Berserk', tag: 'Ledger of the Struggler', blurb: 'Black iron, blood red, the eclipse', font: 'Pirata One', bg: 'radial-gradient(circle at 80% 25%,#000 0 18px,#D4261E 20px,rgba(179,18,27,.3) 34px,transparent 60px),#0d0a0a', fg: '#E9E1D6', dots: ['#B3121B', '#71808A', '#B08D3C', '#E9E1D6'] },
+  { id: 'sv', name: 'Seven', tag: 'notebook no. 1,147', blurb: 'Typed, scrawled, under a desk lamp', font: 'Special Elite', bg: 'linear-gradient(#D9CEB2,#C8BB98)', fg: '#1C1812', dots: ['#6E140E', '#22305A', '#3E4A3A', '#1C1812'] }
+];
+const SKIN_FX = { bb: r => elementize(r) };
+const LS_SKIN = 'moneyTracker.skin';
+let currentSkin = 'original';
+function setSkinAttr(id) {
+  if (!SKINS.some(s => s.id === id)) id = 'original';
+  currentSkin = id;
+  if (id === 'original') document.documentElement.removeAttribute('data-skin'); else document.documentElement.setAttribute('data-skin', id);
+  document.getElementById('tagline').textContent = SKINS.find(s => s.id === id).tag;
+  try { localStorage.setItem(LS_SKIN, id); } catch {}
+}
+let pendingSkin = null;
+function chooseSkin(id) {
+  pendingSkin = id;
+  const swap = () => { if (pendingSkin !== id) return; setSkinAttr(id); pendingSkin = null; if (S) render(); };
+  if (mode !== 'loading' && !readOnly && S && S.settings.skin !== id) write('settings', { ...S.settings, skin: id });
+  if (document.startViewTransition && document.visibilityState === 'visible' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    try { const vt = document.startViewTransition(swap); [vt.ready, vt.finished, vt.updateCallbackDone].forEach(p => p && p.catch(() => {})); } catch { swap(); }
+    setTimeout(swap, 400);
+  } else swap();
+}
+function skinOptions() {
+  return `<div class="skins">${SKINS.map(s => `<button class="skin-opt" data-skin-pick="${s.id}" aria-pressed="${s.id === currentSkin}" style="background:${s.bg};color:${s.fg}">
+    ${s.id === currentSkin ? '<span class="on">In use</span>' : ''}
+    <div class="stack" style="gap:4px"><b style="font-family:'${s.font}',serif">${esc(s.name)}</b><span>${esc(s.blurb)}</span></div>
+    <div class="dots">${s.dots.map(c => `<i style="background:${c}"></i>`).join('')}</div></button>`).join('')}</div>`;
+}
+function openSkins() {
+  const sh = document.getElementById('sheet');
+  editing = { kind: 'skins' };
+  sh.innerHTML = `<div class="panel" role="dialog" aria-label="Choose a theme"><div class="handle" aria-hidden="true"></div><div class="card-h"><h2 style="font-size:18px">Choose a theme</h2><button type="button" class="btn ghost sm" data-close>Close</button></div>
+    ${skinOptions()}<p class="hint">Same tracker, same numbers. Only the look changes, and your choice is remembered.</p></div>`;
+  sh.hidden = false; document.documentElement.classList.add('sheet-open');
+}
+const ELEMENTS = { H: 1, He: 2, Li: 3, Be: 4, B: 5, C: 6, N: 7, O: 8, F: 9, Ne: 10, Na: 11, Mg: 12, Al: 13, Si: 14, P: 15, S: 16, Cl: 17, Ar: 18, K: 19, Ca: 20, Sc: 21, Ti: 22, V: 23, Cr: 24, Mn: 25, Fe: 26, Co: 27, Ni: 28, Cu: 29, Zn: 30, Ga: 31, Ge: 32, As: 33, Se: 34, Br: 35, Kr: 36, Rb: 37, Sr: 38, Y: 39, Zr: 40, Nb: 41, Mo: 42, Tc: 43, Ru: 44, Rh: 45, Pd: 46, Ag: 47, Cd: 48, In: 49, Sn: 50, Sb: 51, Te: 52, I: 53, Xe: 54, Cs: 55, Ba: 56, La: 57, Ce: 58, Pr: 59, Nd: 60, Sm: 62, Eu: 63, Gd: 64, Tb: 65, Dy: 66, Ho: 67, Er: 68, Tm: 69, Yb: 70, Lu: 71, Hf: 72, Ta: 73, W: 74, Re: 75, Os: 76, Ir: 77, Pt: 78, Au: 79, Hg: 80, Tl: 81, Pb: 82, Bi: 83, Po: 84, At: 85, Rn: 86, Fr: 87, Ra: 88, Ac: 89, Th: 90, Pa: 91, U: 92, Np: 93, Pu: 94, Am: 95, No: 102 };
+function elementize(root) {
+  root.querySelectorAll('.head h1').forEach(h => {
+    const t = h.firstChild; if (!t || t.nodeType !== 3) return;
+    const m = t.data.match(/^(\s*)([A-Za-z])([A-Za-z]?)/); if (!m) return;
+    const two = m[2].toUpperCase() + m[3].toLowerCase(), one = m[2].toUpperCase();
+    const sym = ELEMENTS[two] ? two : ELEMENTS[one] ? one : null; if (!sym) return;
+    const box = document.createElement('span'); box.className = 'el';
+    box.innerHTML = `<sup>${ELEMENTS[sym]}</sup>${sym}`;
+    t.data = t.data.slice(m[1].length + sym.length);
+    h.insertBefore(box, t);
+  });
+}
+try { setSkinAttr(localStorage.getItem(LS_SKIN) || 'original'); } catch { setSkinAttr('original'); }
+
+/* ============ storage: Firebase (same project and sign-in as 200 Lean) under users/<uid>/money; this device only when Firebase isn't configured ============ */
+const LS_LOCAL = 'moneyTracker.local.v1';
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+// mode: "loading" | "out" (needs sign-in) | "db" (signed in, synced) | "local" (no Firebase config)
+let mode = 'loading', col = null, docs = {}, readOnly = false, pending = 0, fbdb = null, account = null, syncNote = '';
+const auth = { email: '', err: '', msg: '', busy: false };
+
+function setStatus() {
+  const el = document.getElementById('status');
+  let cls = '', txt = 'Connecting…';
+  if (mode === 'db') { cls = pending ? 'busy' : syncNote ? 'local' : 'ok'; txt = pending ? 'Syncing…' : syncNote || 'Synced'; }
+  else if (mode === 'local') { cls = 'local'; txt = 'Saved on this device'; }
+  else if (mode === 'out') txt = 'Signed out';
+  el.className = 'status ' + cls; el.lastElementChild.textContent = txt;
+  document.documentElement.classList.toggle('signed-out', mode === 'out' || mode === 'loading');
+}
+function useLocal(note) {
+  mode = 'local'; col = null;
+  docs = lsGet(LS_LOCAL) || {};
+  setStatus(); scheduleRender();
+  if (note) toast(note);
+}
+function boot() {
+  renderTabs(); setStatus();
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  const cfg = window.FIREBASE_CONFIG;
+  if (!window.firebase || !cfg || !cfg.apiKey) return useLocal();
+  firebase.initializeApp(cfg);
+  fbdb = firebase.firestore();
+  // keeps working with no signal; writes sync when you're back online
+  fbdb.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+  let unsub = null;
+  firebase.auth().onAuthStateChanged(u => {
+    if (unsub) { unsub(); unsub = null; }
+    account = u;
+    if (!u) { mode = 'out'; col = null; docs = {}; setStatus(); render(); return; }
+    col = fbdb.collection('users').doc(u.uid).collection('money');
+    mode = 'db'; setStatus();
+    unsub = col.onSnapshot({ includeMetadataChanges: true }, snap => {
+      const next = {};
+      snap.docs.forEach(x => { next[x.id] = x.data(); });
+      docs = next;
+      pending = snap.metadata.hasPendingWrites ? 1 : 0;
+      syncNote = snap.metadata.fromCache ? 'Offline · will sync' : '';
+      setStatus(); scheduleRender();
+    }, () => toast('Lost the sync connection. Reopen the app to reconnect.'));
+  });
+}
+function write(id, body) {
+  if (body) docs = { ...docs, [id]: body }; else { docs = { ...docs }; delete docs[id]; }
+  scheduleRender();
+  if (mode !== 'db') {
+    if (!lsSet(LS_LOCAL, docs)) toast('This browser blocked saving. Your change will be lost when you close the page.');
+    return;
+  }
+  // Firestore applies the write locally at once and queues it while offline
+  const ref = col.doc(id);
+  (body ? ref.set(body) : ref.delete()).catch(() => toast('Couldn’t sync that change. Check your connection.'));
+}
+
+/* ---- sign-in (same accounts as 200 Lean) ---- */
+function authMessage(e) {
+  const c = (e && e.code) || '';
+  if (c.includes('invalid-credential') || c.includes('wrong-password') || c.includes('user-not-found')) return 'That email and password don’t match. Use your 200 Lean login.';
+  if (c.includes('email-already-in-use')) return 'That email already has an account. Sign in instead.';
+  if (c.includes('weak-password')) return 'Use a password with at least 6 characters.';
+  if (c.includes('invalid-email')) return 'That email address doesn’t look right.';
+  if (c.includes('network')) return 'No connection. Sign-in needs internet the first time.';
+  if (c.includes('admin-restricted') || c.includes('operation-not-allowed')) return 'New accounts are turned off. Sign in with your 200 Lean login.';
+  return 'Something went wrong. Try again.';
+}
+async function doAuth(kind) {
+  const email = (document.getElementById('a-email')?.value || '').trim(), pass = document.getElementById('a-pass')?.value || '';
+  auth.email = email; auth.err = ''; auth.msg = '';
+  if (!email) { auth.err = 'Enter your email.'; return render(); }
+  if (kind !== 'reset' && !pass) { auth.err = 'Enter your password.'; return render(); }
+  auth.busy = true; render();
+  try {
+    const a = firebase.auth();
+    if (kind === 'in') await a.signInWithEmailAndPassword(email, pass);
+    else if (kind === 'up') await a.createUserWithEmailAndPassword(email, pass);
+    else { await a.sendPasswordResetEmail(email); auth.msg = 'Reset link sent. Check your email.'; }
+  } catch (e) { auth.err = authMessage(e); }
+  auth.busy = false; render();
+}
+function vAuth() {
+  return `<div class="card auth">
+    <div class="stack" style="gap:6px"><span class="eyebrow">Money Tracker</span><h1>Sign in</h1>
+      <p class="lede">Use the same email and password as 200 Lean. Your money data is kept separately, and only you can see it.</p></div>
+    <form id="authform" class="stack" style="gap:12px" novalidate>
+      <div class="field"><label for="a-email">Email</label><input id="a-email" type="email" autocomplete="username" inputmode="email" value="${esc(auth.email)}"></div>
+      <div class="field"><label for="a-pass">Password</label><input id="a-pass" type="password" autocomplete="current-password"></div>
+      ${auth.err ? `<p class="err">${esc(auth.err)}</p>` : ''}${auth.msg ? `<p class="hint">${esc(auth.msg)}</p>` : ''}
+      <button class="btn" type="submit" ${auth.busy ? 'disabled' : ''}>${auth.busy ? 'Signing in…' : 'Sign in'}</button>
+      <div class="chips"><button type="button" class="btn ghost sm" data-auth="up">Create account</button><button type="button" class="btn ghost sm" data-auth="reset">Forgot password</button></div>
+    </form></div>`;
+}
+
+/* ---- backup file: download everything, or load a backup in ---- */
+function exportBackup() {
+  const data = JSON.stringify({ app: 'Money Tracker', exportedAt: new Date().toISOString(), docs }, null, 1);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+  a.download = `money-tracker-backup-${isoOf(todaySerial())}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+async function importBackup(file) {
+  try {
+    const d = JSON.parse(await file.text());
+    if (!d || typeof d.docs !== 'object') throw new Error('shape');
+    const entries = Object.entries(d.docs).filter(([id, b]) => b && typeof b === 'object' && /^[A-Za-z0-9_.~:@+-]{1,200}$/.test(id));
+    if (mode === 'db') {
+      for (let i = 0; i < entries.length; i += 400) {
+        const b = fbdb.batch();
+        entries.slice(i, i + 400).forEach(([id, body]) => b.set(col.doc(id), body));
+        b.commit().catch(() => toast('Some of the backup didn’t sync. Check your connection.'));
+      }
+    } else { entries.forEach(([id, body]) => { docs[id] = body; }); lsSet(LS_LOCAL, docs); scheduleRender(); }
+    toast(`Imported ${entries.length} entries`);
+  } catch { toast('That file isn’t a Money Tracker backup.'); }
+}
+document.getElementById('importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; });
+const newId = p => p + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+function buildState() {
+  const r = { clients: [], expenses: [], others: [], nw: [], paydays: {} };
+  let settings = null;
+  for (const [id, b] of Object.entries(docs)) {
+    if (id === 'settings') { settings = b; continue; }
+    if (!b) continue;
+    if (b.kind === 'client') r.clients.push({ id, ...b });
+    else if (b.kind === 'expense') r.expenses.push({ id, ...b });
+    else if (b.kind === 'other') r.others.push({ id, ...b });
+    else if (b.kind === 'nw') r.nw.push({ id, ...b });
+    else if (b.kind === 'payday') r.paydays[b.date] = { id, ...b };
+  }
+  settings = { ...DEFAULTS, ...(settings || {}) };
+  if (!settings.milestones || !settings.milestones.length) settings.milestones = DEFAULTS.milestones;
+  const empty = !r.clients.length && !r.expenses.length && !r.others.length && !r.nw.length && !Object.keys(r.paydays).length;
+  const S = empty ? { settings, ...examples(settings), example: true } : { settings, ...r, example: false };
+  S.clients.sort((a, b) => (a.n ?? 0) - (b.n ?? 0));
+  return S;
+}
+
+/* ============ rendering ============ */
+const TABS = [['home', 'Dashboard'], ['clients', 'Clients'], ['paydays', 'Paydays'], ['expenses', 'Expenses'], ['other', 'Other pay'], ['networth', 'Net worth'], ['pl', 'Business P&L'], ['milestones', 'Milestones'], ['settings', 'Settings']];
+let tab = TABS.some(t => t[0] === location.hash.slice(1)) ? location.hash.slice(1) : 'home';
+let S, R, showAllPaydays = false, renderQueued = false, deferred = false, lastTab = null;
+const charts = {};
+
+/* ---- phone app shell: bottom tab bar, add button, More menu ---- */
+const phoneMQ = matchMedia('(max-width: 760px)');
+const isPhone = () => phoneMQ.matches;
+phoneMQ.addEventListener('change', () => { renderTabs(); if (S) render(); });
+const ICONS = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  clients: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/>',
+  paydays: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 12.5v6.5M14 14c0-.8-.9-1.3-2-1.3s-2 .5-2 1.3c0 1.9 4 1 4 2.9 0 .8-.9 1.3-2 1.3s-2-.5-2-1.3"/>',
+  expenses: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  more: '<circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/>',
+  other: '<path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H8a2.5 2.5 0 1 1 0-5c3 0 4 5 4 5zm0 0h4a2.5 2.5 0 1 0 0-5c-3 0-4 5-4 5z"/>',
+  networth: '<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>',
+  pl: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
+  milestones: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+  theme: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>',
+  add: '<path d="M12 5v14M5 12h14"/>',
+  client: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.6 3.4-5.5 6.5-5.5 1.5 0 2.9.4 4 1.3M18 15v6M15 18h6"/>',
+  nw: '<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>'
+};
+const ic = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ''}</svg>`;
+const BNAV = [['home', 'Home'], ['clients', 'Clients'], ['paydays', 'Paydays'], ['expenses', 'Expenses'], ['more', 'More']];
+const MORE = ['other', 'networth', 'pl', 'milestones', 'settings'];
+const FAB_ADD = { home: 'quick', clients: 'client', expenses: 'expense', other: 'other', networth: 'nw' };
+
+function renderTabs() {
+  document.getElementById('tabs').innerHTML = TABS.map(([k, l]) => `<button data-tab="${k}" ${k === tab ? 'aria-current="page"' : ''}>${esc(l)}</button>`).join('');
+  document.getElementById('bnav').innerHTML = BNAV.map(([k, l]) => {
+    const on = k === tab || (k === 'more' && MORE.includes(tab));
+    return `<button data-bnav="${k}" ${on ? 'aria-current="page"' : ''}><span class="bic">${ic(k)}</span>${l}</button>`;
+  }).join('');
+  const fab = document.getElementById('fab');
+  fab.innerHTML = ic('add'); fab.dataset.fab = FAB_ADD[tab] || ''; fab.hidden = !FAB_ADD[tab];
+}
+function openMenu(title, items, note = '') {
+  const sh = document.getElementById('sheet');
+  editing = { kind: 'menu' };
+  sh.innerHTML = `<div class="panel" role="dialog" aria-label="${esc(title)}"><div class="handle" aria-hidden="true"></div>
+    <div class="card-h"><h2 style="font-size:18px">${esc(title)}</h2><button type="button" class="btn ghost sm" data-close>Close</button></div>
+    <div class="menu">${items.map(([icon, label, sub, act]) => `<button data-menu="${act}" ${tab === act.slice(3) ? 'aria-current="page"' : ''}><span class="bic">${ic(icon)}</span><span class="stack" style="gap:1px"><b>${esc(label)}</b><small>${esc(sub)}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div>
+    ${note ? `<p class="hint">${note}</p>` : ''}</div>`;
+  sh.hidden = false; document.documentElement.classList.add('sheet-open');
+}
+function openMore() {
+  openMenu('More', [
+    ['other', 'Other pay', 'Bonuses and one-off payments', 'go:other'],
+    ['networth', 'Net worth', 'Your month-end balances', 'go:networth'],
+    ['pl', 'Business P&L', 'Income, expenses and profit by month', 'go:pl'],
+    ['milestones', 'Milestones', 'Best month and your rewards', 'go:milestones'],
+    ['settings', 'Settings', 'Commission rates, paydays, tax rate', 'go:settings'],
+    ['theme', 'Theme', SKINS.find(s => s.id === currentSkin).name, 'skins']
+  ], mode === 'db' ? `Synced as ${esc(account?.email || 'you')}. Changes you make here show up on your other devices automatically.` : 'Saved on this device only.');
+}
+function openQuick() {
+  openMenu('Add', [
+    ['client', 'New client', 'Date signed, name, type, 1st payment', 'add:client'],
+    ['expenses', 'Expense', 'Something you bought for work', 'add:expense'],
+    ['other', 'Bonus or one-off pay', 'Added to the payday that covers it', 'add:other'],
+    ['nw', 'Month-end balances', 'Your 4 account balances', 'add:nw'],
+    ['paydays', 'Payday', 'What Bandi paid and what went to taxes', 'go:paydays']
+  ]);
+}
+function scheduleRender() {
+  const a = document.activeElement;
+  if (a && a.closest && a.closest('#main') && a.matches('input,select')) { deferred = true; return; }
+  if (renderQueued) return; renderQueued = true;
+  const run = () => { if (!renderQueued) return; renderQueued = false; render(); };
+  requestAnimationFrame(run); setTimeout(run, 80);
+}
+document.addEventListener('focusout', () => setTimeout(() => { if (deferred) { deferred = false; scheduleRender(); } }, 0));
+
+function render() {
+  const main = document.getElementById('main');
+  if (mode === 'loading') return;
+  if (mode === 'out') { lastTab = null; main.innerHTML = `<div class="view">${vAuth()}</div>`; return; }
+  S = buildState(); R = compute(S, todaySerial());
+  if (!pendingSkin && S.settings.skin && S.settings.skin !== currentSkin) setSkinAttr(S.settings.skin);
+  const views = { home: vHome, clients: vClients, paydays: vPaydays, expenses: vExpenses, other: vOther, networth: vNetWorth, pl: vPL, milestones: vMilestones, settings: vSettings };
+  const fresh = lastTab !== tab; lastTab = tab;
+  const banner = S.example ? `<div class="banner"><p>These are example numbers so you can see how it works. Add your first client, expense or balance and they disappear.</p><div class="chips"><button class="btn sm ghost" data-import>Import backup</button><button class="btn sm" data-add="client">+ Add a client</button></div></div>` : '';
+  main.innerHTML = `<div class="view" ${fresh ? '' : 'style="animation:none"'}>${banner}${views[tab]()}</div>`;
+  if (SKIN_FX[currentSkin]) SKIN_FX[currentSkin](main);
+  drawCharts();
+  if (fresh) countUps();
+}
+
+const tile = (cls, label, value, sub, sym = '', z = '') => `<div class="tile ${cls}" data-sym="${sym}" data-z="${z}"><span class="eyebrow">${label}</span><span class="big" data-count="${value}">${$0(value)}</span><span class="sub">${sub}</span></div>`;
+const row = (k, v, cls = '') => `<div class="row ${cls}"><span>${k}</span><strong>${v}</strong></div>`;
+const sign = n => n > 0.0049 ? 'pos' : n < -0.0049 ? 'neg' : '';
+
+function vHome() {
+  const d = R.dash, n = d.next, nw = R.nwLatest;
+  const change = nw && nw.change != null ? nw.change : 0;
+  const lv = R.levels;
+  return `
+  <div class="head"><div><span class="eyebrow">${dfmt(R.today, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span><h1>Money dashboard</h1></div></div>
+  <section class="kpis">
+    ${tile('t1', 'Next paycheck', n ? n.G : 0, n ? `on ${dShort(n.C)} · ${$0(n.taxPut)} to taxes` : 'Set your first payday in Settings', 'Pd', 46)}
+    ${tile('t2', 'Net worth', nw ? nw.total : 0, `${change >= 0 ? '▲' : '▼'} ${$0(Math.abs(change))} vs last month`, 'Au', 79)}
+    ${tile('t3', 'Profit this year', d.profit, `Income ${$0(d.income)} · Costs ${$0(d.costs)}`, 'Pt', 78)}
+    ${tile('t4', 'Every 4 weeks', d.every4, `${$0(d.perYear)} a year at this pace`, 'Re', 75)}
+  </section>
+  <section class="grid">
+    <div class="card"><div class="card-h"><h2>Next payday</h2>${n ? `<span class="chip vio">${dLong(n.C)}</span>` : ''}</div>
+      <div class="rows">
+        ${row('Expected from Bandi', n ? $2(n.G) : '—', 'hl')}
+        ${row('Move to tax fund from it', n ? $2(n.taxPut) : '—')}
+        ${row('Still owed from past paydays', `<span class="${d.owed > 0.0049 ? 'neg' : ''}">${$2(d.owed)}</span>`)}
+      </div>
+      <p class="hint">${d.owed > 0.0049 ? 'Bandi underpaid you on a past payday. Check the Paydays tab.' : 'Counts every client signed and every 4-week payment due up to payday.'}</p>
+    </div>
+    <div class="card"><div class="card-h"><h2>Net worth</h2>${nw ? `<span class="chip">as of ${dMonth(nw.s)}</span>` : ''}</div>
+      ${nw ? `<div class="split"><div class="rows">
+        ${row('Net worth', $2(nw.total), 'hl')}
+        ${row('Change vs last month', `<span class="${sign(change)}">${change >= 0 ? '+' : ''}${$2(change)}</span>`)}
+        ${row('Cash share', nw.cashPct == null ? '—' : pct(nw.cashPct, 1))}
+      </div><div class="chart-box sm" style="height:150px"><canvas id="chDonut" aria-label="Where your money is"></canvas></div></div>`
+      : `<div class="empty">Type your balances on the Net worth tab at the end of each month.</div>`}
+    </div>
+    <div class="card"><div class="card-h"><h2>This year’s business</h2><span class="chip">${ymd(R.today)[0]}</span></div>
+      <div class="rows">
+        ${row('Income received', $2(d.income))}
+        ${row('Expenses', $2(d.costs))}
+        ${row('Profit (what you’re taxed on)', `<span class="${sign(d.profit)}">${$2(d.profit)}</span>`, 'hl')}
+        ${row('Should be in tax fund', $2(d.shouldTax))}
+        ${row('Moved to tax fund so far', $2(d.movedTax))}
+        ${row('Tax fund shortfall (move this)', `<span class="${d.shortfall > 0.0049 ? 'neg' : 'pos'}">${$2(d.shortfall)}</span>`)}
+      </div>
+      <p class="hint">${pct(S.settings.taxRate)} of this year’s profit so far. $0 while the year is still at a loss.</p>
+    </div>
+    <div class="card"><div class="card-h"><h2>Clients</h2><button class="btn sm ghost" data-go="clients">Open</button></div>
+      <div class="rows">
+        ${row('Clients signed', d.signed)}
+        ${row('Waiting on a launch date', d.waiting ? `<span class="chip warn">${d.waiting}</span>` : '0')}
+        ${row('Your cut every 4 weeks (all active)', $2(d.every4), 'hl')}
+        ${row('Per year at that pace', $2(d.perYear))}
+        ${row('Earned from clients so far', $2(d.earned))}
+      </div>
+      <p class="hint">${Math.round(365 / (num(S.settings.cycle) || 28) * 10) / 10} four-week cycles a year, not 12.</p>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-h"><h2>🏆 Milestones</h2><span class="chip vio">Best month ${$0(R.best)}</span></div>
+    <div class="ms">${lv.map(levelCard).join('')}</div>
+  </section>
+  <section class="grid">
+    <div class="card"><h2>Paychecks</h2><div class="chart-box"><canvas id="chPay"></canvas></div></div>
+    <div class="card"><h2>Net worth by month</h2><div class="chart-box"><canvas id="chNW"></canvas></div></div>
+    <div class="card"><h2>Business profit by month</h2><div class="chart-box"><canvas id="chPL"></canvas></div></div>
+  </section>
+  <section class="card"><h2>How to use it</h2>
+    <div class="guide">
+      ${[['New client signs', 'Clients: date, name, type, 1st payment', 'client'], ['Campaign launches', 'Clients: fill in the launch date', 'clients'], ['Client leaves', 'Clients: fill in the cancel date', 'clients'], ['Payday', 'Paydays: what you got + what went to taxes', 'paydays'], ['Bought something for work', 'Expenses tab', 'expense'], ['Bonus or one-off pay', 'Other pay tab', 'other-add'], ['End of each month', 'Net worth: type your 4 balances', 'nw'], ['Big month', 'Milestones: see what you unlocked', 'milestones']]
+        .map(([a, b, go]) => `<button data-guide="${go}"><div class="stack" style="gap:2px"><b>${a}</b><span>${b}</span></div><span aria-hidden="true">→</span></button>`).join('')}
+    </div>
+    <p class="hint"><span class="typein">Purple text</span> means you type it. Everything else is worked out for you.</p>
+  </section>`;
+}
+function levelCard(l, i) {
+  return `<div class="level ${l.won ? 'won' : ''}">
+    <span class="eyebrow">Level ${i + 1} · ${$0(l.goal)} take-home in one month</span>
+    <div class="reward"><em>${esc(l.icon)}</em>${esc(l.reward)}</div>
+    <div class="bar" role="progressbar" aria-valuenow="${Math.round(l.frac * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="--p:${(l.frac * 100).toFixed(1)}%"></i></div>
+    <div class="meta"><span>${l.won ? '🏆 UNLOCKED' : pct(l.frac) + ' COMPLETE'}</span><span>${l.won ? 'Earned ' + dMonthLong(l.wonAt) : $0(l.toGo) + ' to go'}</span></div>
+  </div>`;
+}
+
+function clientStatus(c) {
+  if (c.cancelS != null && !c.active) return '<span class="chip bad">Cancelled</span>';
+  if (c.launchS == null) return '<span class="chip warn">Waiting on launch</span>';
+  if (c.cancelS != null) return '<span class="chip warn">Leaving ' + dShort(c.cancelS) + '</span>';
+  return '<span class="chip good">Active</span>';
+}
+function clientBiz(c) {
+  const where = [c.city, c.state].filter(v => !blank(v)).map(v => String(v).trim()).join(', ');
+  if (blank(c.business) && !where) return '';
+  return `<span class="biz">${blank(c.business) ? '' : `<span>${esc(c.business)}</span>`}${where ? `<span class="where">📍 ${esc(where)}</span>` : ''}</span>`;
+}
+function vClients() {
+  const d = R.dash;
+  return `
+  <div class="head"><div><span class="eyebrow">Clients</span><h1>${d.signed} signed · ${$0(d.every4)} every 4 weeks</h1>
+    <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every 4-week payment = ${pct(S.settings.commRecur)}.</p></div>
+    <button class="btn" data-add="client">+ Add client</button></div>
+  <div class="list">${R.clients.map(c => `
+    <button class="item" data-edit="client" data-id="${esc(c.id)}">
+      <div class="item-h"><div class="stack" style="gap:4px"><b>${esc(c.name)}</b>${clientBiz(c)}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
+        <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num" style="font-size:18px">${$0(c.O)}</b></div></div>
+      <div class="kv">
+        <div><small>1st payment</small><span>${$0(c.p1)}</span></div>
+        <div><small>2nd</small><span>${$0(c.p2)}</span></div>
+        <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
+        <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
+        <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
+        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
+        <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
+        <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
+        <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
+        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
+        <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
+      </div>
+    </button>`).join('') || '<div class="empty">No clients yet. Add the first one you sign.</div>'}
+  </div>`;
+}
+
+function vPaydays() {
+  const ps = R.paydays, ni = R.nextIdx;
+  const shown = showAllPaydays ? ps : ps.slice(0, Math.max(ni + 12, 12));
+  return `
+  <div class="head"><div><span class="eyebrow">Paydays</span><h1>Paid on the ${ordinal(ymd(ser(S.settings.firstPayday) ?? R.today)[2])}, every month</h1>
+    <p class="lede">Each check covers everything since the last payday, through payday itself. Type what Bandi actually paid you and what you moved to the tax fund.</p></div></div>
+  <div class="card"><h2>Paychecks</h2><div class="chart-box"><canvas id="chPay"></canvas></div></div>
+  ${isPhone() ? `<div class="pcards">${shown.map((p, k) => `<div class="card pcard ${k === ni ? 'next' : p.C > R.today ? 'future' : ''}">
+    <div class="card-h"><div class="stack" style="gap:1px"><small class="hint">#${p.i} · sales ${dShort(p.B)} – ${dShort(p.C)}</small><b class="pdate">${dLong(p.C)}</b></div>
+      ${k === ni ? '<span class="chip vio">Next</span>' : p.owe > 0.0049 ? '<span class="chip bad">Owed</span>' : p.H != null ? '<span class="chip good">Paid</span>' : ''}</div>
+    <div class="rows">
+      ${row('Bandi should pay you', $2(p.G), 'hl')}
+      ${row('From new signups', $2(p.D))}${row('From 4-week payments', $2(p.E))}${row('Bonuses', $2(p.F))}
+      ${row('Put this in tax fund', $2(p.taxPut))}
+      ${p.owe == null ? '' : row('Bandi still owes you', `<span class="${p.owe > 0.0049 ? 'neg' : ''}">${$2(p.owe)}</span>`)}
+    </div>
+    <div class="fgrid pin">
+      <div class="field"><label for="rcv-${isoOf(p.C)}">Bandi actually paid you</label><input id="rcv-${isoOf(p.C)}" inputmode="decimal" data-pay="${isoOf(p.C)}" data-field="received" value="${p.H ?? ''}" placeholder="—" ${S.example ? 'disabled' : ''}></div>
+      <div class="field"><label for="mov-${isoOf(p.C)}">I moved to tax fund</label><input id="mov-${isoOf(p.C)}" inputmode="decimal" data-pay="${isoOf(p.C)}" data-field="moved" value="${p.moved ?? ''}" placeholder="—" ${S.example ? 'disabled' : ''}></div>
+    </div></div>`).join('')}</div>` : `<div class="tscroll"><table>
+    <thead><tr><th>#</th><th>Counts sales from</th><th>Payday</th><th>From new signups</th><th>From 4-week payments</th><th>Bonuses</th><th>Bandi should pay you</th><th>Bandi actually paid you</th><th>Bandi still owes you</th><th>Put this in tax fund</th><th>I moved to tax fund</th></tr></thead>
+    <tbody>${shown.map((p, k) => `<tr class="${k === ni ? 'next' : p.C > R.today ? 'future' : ''}">
+      <td>${p.i}</td><td>${dShort(p.B)}</td><td><b>${dLong(p.C)}</b>${k === ni ? ' <span class="chip vio">next</span>' : ''}</td>
+      <td>${$2(p.D)}</td><td>${$2(p.E)}</td><td>${$2(p.F)}</td><td><b>${$2(p.G)}</b></td>
+      <td><input id="rcv-${isoOf(p.C)}" inputmode="decimal" data-pay="${isoOf(p.C)}" data-field="received" value="${p.H ?? ''}" placeholder="—" aria-label="Bandi actually paid you on ${dLong(p.C)}" ${S.example ? 'disabled' : ''}></td>
+      <td class="${p.owe > 0.0049 ? 'neg' : ''}">${p.owe == null ? '' : $2(p.owe)}</td>
+      <td>${$2(p.taxPut)}</td>
+      <td><input id="mov-${isoOf(p.C)}" inputmode="decimal" data-pay="${isoOf(p.C)}" data-field="moved" value="${p.moved ?? ''}" placeholder="—" aria-label="Moved to tax fund on ${dLong(p.C)}" ${S.example ? 'disabled' : ''}></td>
+    </tr>`).join('')}</tbody></table></div>`}
+  <div><button class="btn ghost sm" data-toggle-pay>${showAllPaydays ? 'Show fewer' : `Show all ${ps.length} paydays`}</button></div>
+  <p class="hint">“Still owes you” is for past paydays only; a blank amount on a past payday counts as fully unpaid. The tax amount is lower while this year’s expenses are still bigger than this year’s income (losses get used up first).</p>`;
+}
+
+function dateBadge(s) { return `<span class="date-badge"><span><small>${dfmt(s, { month: 'short' })}</small><br><b>${ymd(s)[2]}</b></span></span>`; }
+function vExpenses() {
+  const yr = ymd(R.today)[0], items = [...R.expenses].sort((a, b) => (b.s ?? 0) - (a.s ?? 0));
+  const ytd = sum(R.expenses.filter(e => e.s != null && ymd(e.s)[0] === yr), e => e.amt);
+  return `
+  <div class="head"><div><span class="eyebrow">Expenses</span><h1>${$2(ytd)} spent in ${yr}</h1>
+    <p class="lede">Log each business expense with its date. Keep the receipt (photo or email).</p></div>
+    <button class="btn" data-add="expense">+ Add expense</button></div>
+  <div class="stack">${items.map(e => `<button class="line-item" data-edit="expense" data-id="${esc(e.id)}">
+    ${e.s == null ? '<span class="date-badge">—</span>' : dateBadge(e.s)}
+    <span class="what"><b>${esc(e.what || 'Expense')}</b><span><span class="chip">${esc(e.category || 'Other')}</span> <span class="hint">${e.s == null ? '' : dLong(e.s)}</span></span></span>
+    <span class="amt">${$2(e.amt)}</span></button>`).join('') || '<div class="empty">No expenses yet.</div>'}</div>`;
+}
+function vOther() {
+  const items = [...R.others].sort((a, b) => (b.s ?? 0) - (a.s ?? 0));
+  return `
+  <div class="head"><div><span class="eyebrow">Other pay</span><h1>Bonuses & one-offs</h1>
+    <p class="lede">Bonuses and one-off payments from Bandi. They’re added to the payday that covers their date.</p></div>
+    <button class="btn" data-add="other">+ Add payment</button></div>
+  <div class="stack">${items.map(o => `<button class="line-item" data-edit="other" data-id="${esc(o.id)}">
+    ${o.s == null ? '<span class="date-badge">—</span>' : dateBadge(o.s)}
+    <span class="what"><b>${esc(o.desc || 'Payment')}</b><span class="hint">${o.s == null ? '' : dLong(o.s)}</span></span>
+    <span class="amt pos">${$2(o.amt)}</span></button>`).join('') || '<div class="empty">No bonuses yet.</div>'}</div>`;
+}
+function vNetWorth() {
+  const rows = R.nwRows, nw = R.nwLatest;
+  const cell = (v, f = $2) => v == null ? '' : f(v);
+  return `
+  <div class="head"><div><span class="eyebrow">Net worth</span><h1>${nw ? $2(nw.total) : 'No balances yet'}</h1>
+    <p class="lede">On the last day of each month, type in your balances. Everything to the right fills itself in. Your tax money and travel money sit in the money market; the tax part isn’t really yours.</p></div>
+    <button class="btn" data-add="nw">+ Add month</button></div>
+  <div class="grid">
+    <div class="card"><h2>Net worth by month</h2><div class="chart-box"><canvas id="chNW"></canvas></div></div>
+    ${nw ? `<div class="card"><h2>Where your money is</h2><div class="chart-box"><canvas id="chDonut"></canvas></div></div>` : ''}
+  </div>
+  ${isPhone() ? `<div class="stack">${[...rows].reverse().map(r => `<button class="item" data-edit="nw" data-id="${esc(r.id)}">
+    <div class="item-h"><b>${dMonthLong(r.s)}</b><div class="stack" style="gap:2px;text-align:right"><b class="num" style="font-size:18px">${r.filled ? $2(r.total) : '—'}</b>${r.change == null ? '' : `<span class="chip ${r.change >= 0 ? 'good' : 'bad'}">${r.change >= 0 ? '▲' : '▼'} ${$2(Math.abs(r.change))}${r.changePct == null ? '' : ' · ' + pct(Math.abs(r.changePct), 1)}</span>`}</div></div>
+    <div class="kv">
+      <div><small>Checking / Savings</small><span class="typein">${blank(r.checking) ? '—' : $2(num(r.checking))}</span></div>
+      <div><small>Money Market</small><span class="typein">${blank(r.mm) ? '—' : $2(num(r.mm))}</span></div>
+      <div><small>Investments</small><span class="typein">${blank(r.invest) ? '—' : $2(num(r.invest))}</span></div>
+      <div><small>Fun / Crypto</small><span class="typein">${blank(r.fun) ? '—' : $2(num(r.fun))}</span></div>
+      <div><small>Cash total</small><span>${r.filled ? $2(r.cash) : '—'}</span></div>
+      <div><small>Cash %</small><span>${cell(r.cashPct, v => pct(v, 1)) || '—'}</span></div>
+    </div></button>`).join('') || '<div class="empty">No months yet.</div>'}</div>` : `<div class="tscroll"><table>
+    <thead><tr><th>Month</th><th>Checking / Savings</th><th>Money Market</th><th>Investments (Roth + brokerage)</th><th>Fun stocks / Crypto</th><th>Cash total</th><th>Investment total</th><th>Net worth</th><th>Change vs last month</th><th>Change %</th><th>Cash %</th></tr></thead>
+    <tbody>${[...rows].reverse().map(r => `<tr class="click" data-edit="nw" data-id="${esc(r.id)}" tabindex="0">
+      <td><b>${dMonth(r.s)}</b></td>
+      ${['checking', 'mm', 'invest', 'fun'].map(k => `<td class="typein">${blank(r[k]) ? '' : $2(num(r[k]))}</td>`).join('')}
+      <td>${r.filled ? $2(r.cash) : ''}</td><td>${r.filled ? $2(r.inv) : ''}</td><td><b>${r.filled ? $2(r.total) : ''}</b></td>
+      <td class="${sign(r.change ?? 0)}">${cell(r.change)}</td><td class="${sign(r.changePct ?? 0)}">${cell(r.changePct, v => pct(v, 1))}</td><td>${cell(r.cashPct, v => pct(v, 1))}</td>
+    </tr>`).join('') || `<tr><td colspan="11" class="l">No months yet.</td></tr>`}</tbody></table></div>`}`;
+}
+function vPL() {
+  const y = ymd(R.today)[0];
+  return `
+  <div class="head"><div><span class="eyebrow">Business P&amp;L</span><h1>${y} profit so far: <span class="${sign(R.dash.profit)}">${$0(R.dash.profit)}</span></h1>
+    <p class="lede">Income is what actually landed (Paydays › what Bandi actually paid you). Expenses come from the Expenses tab. Take-home is profit minus ${pct(S.settings.taxRate)} tax, and it’s what your milestones are based on.</p></div></div>
+  <div class="card"><h2>Business profit by month</h2><div class="chart-box"><canvas id="chPL"></canvas></div></div>
+  <div class="grid">${R.years.map(r => `<div class="card"><div class="card-h"><h2>${r.y}</h2></div><div class="rows">
+    ${row('Income', $2(r.inc))}${row('Expenses', $2(r.ex))}${row('Profit', `<span class="${sign(r.profit)}">${$2(r.profit)}</span>`, 'hl')}${row(pct(S.settings.taxRate) + ' tax set-aside', $2(r.set))}</div></div>`).join('')}</div>
+  ${isPhone() ? `<div class="stack">${[...R.months].reverse().map(r => `<div class="card pcard ${r.m > R.today ? 'future' : ''}">
+    <div class="card-h"><b>${dMonthLong(r.m)}</b><b class="num ${sign(r.profit)}">${$2(r.profit)}</b></div>
+    <div class="kv">
+      <div><small>Income</small><span>${$2(r.inc)}</span></div>
+      <div><small>Expenses</small><span>${$2(r.ex)}</span></div>
+      <div><small>Take-home</small><span class="${sign(r.takeHome)}">${$2(r.takeHome)}</span></div>
+      <div><small>Profit so far this year</small><span class="${sign(r.ytd)}">${$2(r.ytd)}</span></div>
+    </div></div>`).join('')}</div>` : `<div class="tscroll"><table>
+    <thead><tr><th>Month</th><th>Income (received)</th><th>Expenses</th><th>Profit</th><th>Profit so far this year</th><th>Take-home (after tax)</th></tr></thead>
+    <tbody>${R.months.map(r => `<tr class="${r.m > R.today ? 'future' : ''}"><td><b>${dMonth(r.m)}</b></td><td>${$2(r.inc)}</td><td>${$2(r.ex)}</td>
+      <td class="${sign(r.profit)}">${$2(r.profit)}</td><td class="${sign(r.ytd)}">${$2(r.ytd)}</td><td class="${sign(r.takeHome)}"><b>${$2(r.takeHome)}</b></td></tr>`).join('')}</tbody></table></div>`}`;
+}
+function vMilestones() {
+  const ms = S.settings.milestones;
+  return `
+  <div class="head"><div><span class="eyebrow">Milestones</span><h1>One month. All profit. After taxes and expenses.</h1></div></div>
+  <div class="card"><span class="eyebrow">Best month take-home</span>
+    <div class="best"><span class="big">${$2(R.best)}</span><span class="chip vio">${R.bestMonth == null ? '—' : dMonthLong(R.bestMonth)}</span></div></div>
+  <div class="ms">${R.levels.map(levelCard).join('')}</div>
+  <div class="card"><h2>Edit your milestones</h2>
+    ${ms.map((l, i) => `<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr))">
+      <div class="field"><label for="ms-a-${i}">Level ${i + 1}: one-month take-home</label><input id="ms-a-${i}" inputmode="decimal" data-ms="${i}" data-k="amount" value="${esc(l.amount)}"></div>
+      <div class="field"><label for="ms-r-${i}">Reward</label><input id="ms-r-${i}" data-ms="${i}" data-k="reward" value="${esc(l.reward)}"></div>
+      <div class="field"><label for="ms-i-${i}">Icon</label><input id="ms-i-${i}" data-ms="${i}" data-k="icon" value="${esc(l.icon)}" maxlength="8"></div>
+    </div>`).join('')}
+    <p class="hint">Take-home = a month’s income − expenses − ${pct(S.settings.taxRate)} tax (Business P&amp;L › Take-home). One month has to hit it on its own.</p>
+  </div>`;
+}
+const SETTINGS_FIELDS = [
+  ['commNew', 'Commission: new client (first payment)', '%', ''],
+  ['commRef', 'Commission: referral or upsell (first payment)', '%', ''],
+  ['commRecur', 'Commission: every 4-week payment', '%', ''],
+  ['cycle', 'Client billing cycle (days)', 'days', 'Clients pay every 4 weeks'],
+  ['launchDelay', 'Days from campaign launch to first 4-week payment', 'days', 'First 4-week payment comes 4 weeks after launch'],
+  ['firstPayday', 'First payday', 'date', 'Paid monthly on this day. Each check covers everything since the last payday, through payday itself.'],
+  ['taxRate', 'Tax set-aside rate', '%', 'Goes to the tax money market fund. Confirm with a CPA (NY + WI).']
+];
+function vSettings() {
+  const st = S.settings;
+  return `
+  <div class="head"><div><span class="eyebrow">Settings</span><h1>Your rates and dates</h1>
+    <p class="lede">Purple fields are yours to change. Everything else updates from these.</p></div></div>
+  <div class="card"><div class="fgrid">
+    ${SETTINGS_FIELDS.map(([k, l, u, h]) => `<div class="field ${k === 'firstPayday' ? 'wide' : ''}"><label for="set-${k}">${l}${u === '%' ? ' (%)' : ''}</label>
+      <input id="set-${k}" data-set="${k}" ${u === 'date' ? 'type="date"' : 'inputmode="decimal"'} value="${esc(u === '%' ? +(num(st[k]) * 100).toFixed(4) : st[k])}">${h ? `<small>${h}</small>` : ''}</div>`).join('')}
+    <div class="field"><label>Paydays per year</label><input value="12" disabled><small>Paid once a month on the same day as the first payday.</small></div>
+  </div></div>
+  <div class="card"><h2>Theme</h2>${skinOptions()}</div>
+  <div class="card"><h2>Account &amp; backup</h2>
+    <p class="hint" style="font-size:14px">${mode === 'db' ? `Signed in as <b>${esc(account?.email || '')}</b>. Your entries sync to every device where you sign in, and keep working with no signal.` : 'Sync isn’t set up, so entries are saved on this device only.'}</p>
+    <div class="chips"><button class="btn ghost sm" data-export>Download backup</button><button class="btn ghost sm" data-import>Import backup</button>${mode === 'db' ? '<button class="btn danger sm" data-signout>Sign out</button>' : ''}</div></div>`;
+}
+
+/* ============ charts ============ */
+function tok(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function grad(hex) {
+  return ctx => {
+    const { chart } = ctx, a = chart.chartArea;
+    if (!a) return hex;
+    const g = chart.ctx.createLinearGradient(0, a.bottom, 0, a.top);
+    g.addColorStop(0, hex + '66'); g.addColorStop(1, hex); return g;
+  };
+}
+function baseOpts(legend = true) {
+  const ink = tok('--muted'), line = tok('--line'), fam = tok('--f-body');
+  Chart.defaults.font.family = fam;
+  return {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 900, easing: 'easeOutQuart' },
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: legend, labels: { color: ink, usePointStyle: true, boxWidth: 8, font: { weight: 700 } } },
+      tooltip: { backgroundColor: tok('--ink'), titleColor: tok('--surface'), bodyColor: tok('--surface'), padding: 10, cornerRadius: 10, callbacks: { label: c => ` ${c.dataset.label}: ${$2(c.parsed.y ?? c.parsed)}` } }
+    },
+    scales: {
+      x: { ticks: { color: ink, font: { weight: 600 } }, grid: { display: false }, border: { display: false } },
+      y: { ticks: { color: ink, callback: v => $k(v), font: {} }, grid: { color: line }, border: { display: false } }
+    }
+  };
+}
+function mkChart(id, cfg) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  const el = document.getElementById(id);
+  if (!el || !window.Chart) return;
+  charts[id] = new Chart(el, cfg);
+}
+function drawCharts() {
+  Object.keys(charts).forEach(k => { if (!document.getElementById(k)) { charts[k].destroy(); delete charts[k]; } });
+  if (!window.Chart) return;
+  const mag = tok('--magenta'), vio = tok('--violet'), teal = tok('--teal'), amb = tok('--amber'), good = tok('--good'), bad = tok('--bad');
+  // Paychecks: 12 paydays around the next one
+  const start = Math.max(0, R.nextIdx - 3), pays = R.paydays.slice(start, start + 12);
+  mkChart('chPay', { type: 'bar', data: { labels: pays.map(p => dShort(p.C)), datasets: [
+    { label: 'Bandi should pay you', data: pays.map(p => p.G), backgroundColor: grad(mag), borderRadius: 8, borderSkipped: false },
+    { label: 'Actually paid', data: pays.map(p => p.H), backgroundColor: teal, borderRadius: 8, borderSkipped: false }
+  ] }, options: baseOpts() });
+  const nw = R.nwRows.filter(r => r.filled);
+  mkChart('chNW', { type: 'bar', data: { labels: nw.map(r => dMonth(r.s)), datasets: [
+    { type: 'line', label: 'Net worth', data: nw.map(r => r.total), borderColor: vio, backgroundColor: vio, tension: .35, pointRadius: 4, pointHoverRadius: 7, borderWidth: 3, order: 0 },
+    { label: 'Investment total', data: nw.map(r => r.inv), backgroundColor: grad(teal), borderRadius: 6, stack: 's', order: 1 },
+    { label: 'Cash total', data: nw.map(r => r.cash), backgroundColor: grad(amb), borderRadius: 6, stack: 's', order: 1 }
+  ] }, options: { ...baseOpts(), scales: { ...baseOpts().scales, x: { ...baseOpts().scales.x, stacked: true }, y: { ...baseOpts().scales.y, stacked: true } } } });
+  const ms = R.months;
+  mkChart('chPL', { type: 'bar', data: { labels: ms.map(r => dMonth(r.m)), datasets: [
+    { label: 'Profit', data: ms.map(r => r.profit), backgroundColor: ms.map(r => r.profit >= 0 ? good : bad), borderRadius: 7, borderSkipped: false }
+  ] }, options: baseOpts(false) });
+  const L = R.nwLatest;
+  if (L) mkChart('chDonut', { type: 'doughnut', data: { labels: ['Cash', 'Investments', 'Fun / crypto'], datasets: [
+    { data: [L.cash, num(L.invest), num(L.fun)], backgroundColor: [amb, teal, mag], borderColor: tok('--surface'), borderWidth: 3, hoverOffset: 8 }
+  ] }, options: { responsive: true, maintainAspectRatio: false, cutout: '64%', animation: { animateRotate: true, duration: 1000 },
+    plugins: { legend: { display: tab !== 'home', position: 'bottom', labels: { color: tok('--muted'), usePointStyle: true, boxWidth: 8, font: { weight: 700 } } },
+      tooltip: { backgroundColor: tok('--ink'), titleColor: tok('--surface'), bodyColor: tok('--surface'), callbacks: { label: c => ` ${c.label}: ${$2(c.parsed)}` } } } } });
+}
+function countUps() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const to = +el.dataset.count, t0 = performance.now();
+    const step = t => { const k = Math.min(1, (t - t0) / 800), e = 1 - Math.pow(1 - k, 3); el.textContent = $0(to * e); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+const rethemeObs = () => { if (S) drawCharts(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rethemeObs);
+new MutationObserver(rethemeObs).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ============ forms ============ */
+const FORMS = {
+  client: { title: 'Client', fields: [
+    ['name', 'Client name', 'text', { req: true, wide: true }], ['business', 'Business name', 'text', { wide: true }],
+    ['city', 'City', 'text'], ['state', 'State', 'text', { ph: 'e.g. WI' }], ['signed', 'Date signed (1st payment)', 'date'], ['type', 'Type', 'select', { opts: CLIENT_TYPES }],
+    ['p1', '1st payment (at signup)', 'money'], ['p2', '2nd payment (1st 4-week)', 'money', { ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
+    ['p3', '3rd payment & after', 'money', { ph: 'Same as 2nd', help: 'Type a number if payments step up (e.g. 3,000 → 3,250 → 3,500).' }],
+    ['launch', 'Campaign launch', 'date', { help: '4-week payments start 4 weeks later.' }], ['cancel', 'Cancel date (if they leave)', 'date', { help: 'Payments on or after it stop counting.' }]
+  ] },
+  expense: { title: 'Expense', fields: [['date', 'Date', 'date', { req: true }], ['amount', 'Amount', 'money', { req: true }], ['what', 'What', 'text', { wide: true }], ['category', 'Category', 'select', { opts: EXP_CATS, wide: true }]] },
+  other: { title: 'Bonus or one-off pay', fields: [['date', 'Date', 'date', { req: true }], ['amount', 'Amount', 'money', { req: true }], ['desc', 'Description', 'text', { wide: true }]] },
+  nw: { title: 'Month-end balances', fields: [['month', 'Month', 'month', { req: true, wide: true }], ['checking', 'Checking / Savings', 'money'], ['mm', 'Money Market', 'money'], ['invest', 'Investments (Roth + brokerage)', 'money'], ['fun', 'Fun stocks / Crypto', 'money']] }
+};
+let editing = null;
+function openForm(kind, id) {
+  if (S.example && id) return toast('That’s an example. Add your own with the + button.');
+  const def = FORMS[kind], rec = id ? docs[id] : null;
+  editing = { kind, id };
+  const today = isoOf(R.today);
+  let init = rec ? { ...rec } : {};
+  if (!rec) {
+    if (kind === 'client') init = { type: 'New', signed: today };
+    if (kind === 'expense' || kind === 'other') init = { date: today, category: 'Other' };
+    if (kind === 'nw') { const last = R.nwRows.filter(r => !S.example).slice(-1)[0]; const [y, m] = ymd(last ? edate(last.s, 1) : mk(ymd(R.today)[0], ymd(R.today)[1], 1)); init = { month: `${y}-${String(m).padStart(2, '0')}` }; }
+  } else if (kind === 'nw') init.month = String(rec.month).slice(0, 7);
+  const sh = document.getElementById('sheet');
+  sh.innerHTML = `<form class="panel" id="form" novalidate><div class="handle" aria-hidden="true"></div>
+    <div class="card-h"><h2 style="font-size:18px">${rec ? 'Edit' : 'Add'} ${def.title.toLowerCase()}</h2><button type="button" class="btn ghost sm" data-close>Close</button></div>
+    <div class="fgrid">${def.fields.map(([k, l, t, o = {}]) => `<div class="field ${o.wide ? 'wide' : ''}"><label for="f-${k}">${l}${o.req ? ' *' : ''}</label>${
+      t === 'select' ? `<select id="f-${k}" name="${k}">${o.opts.map(v => `<option ${init[k] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`
+      : `<input id="f-${k}" name="${k}" type="${t === 'money' ? 'text' : t}" ${t === 'money' ? 'inputmode="decimal"' : ''} value="${esc(init[k] ?? '')}" placeholder="${esc(o.ph || '')}">`}${o.help ? `<small>${o.help}</small>` : ''}</div>`).join('')}</div>
+    <p class="err" id="ferr" hidden></p>
+    <div class="panel-f">${rec ? '<button type="button" class="btn danger" data-del>Delete</button>' : '<span></span>'}<button class="btn" type="submit">${rec ? 'Save changes' : 'Add'}</button></div>
+  </form>`;
+  sh.hidden = false; document.documentElement.classList.add('sheet-open');
+  setTimeout(() => sh.querySelector('input,select')?.focus(), 50);
+}
+function closeForm() { const sh = document.getElementById('sheet'); sh.hidden = true; sh.innerHTML = ''; editing = null; document.documentElement.classList.remove('sheet-open'); scheduleRender(); }
+// swipe a sheet down to close it (phone)
+(() => {
+  const sh = document.getElementById('sheet'); let y0 = null, dy = 0, panel = null;
+  sh.addEventListener('touchstart', e => { panel = e.target.closest('.panel'); if (!panel || panel.scrollTop > 0 || e.target.closest('input,select,textarea')) { y0 = null; return; } y0 = e.touches[0].clientY; dy = 0; panel.style.transition = 'none'; }, { passive: true });
+  sh.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); if (dy > 0) { panel.style.transform = `translateY(${dy}px)`; e.preventDefault(); } }, { passive: false });
+  sh.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; panel.style.transition = 'transform .22s ease'; if (dy > 110) closeForm(); else panel.style.transform = ''; });
+})();
+function moneyVal(v) { const t = String(v ?? '').replace(/[$,\s]/g, ''); if (t === '') return null; const n = parseFloat(t); return isFinite(n) ? n : NaN; }
+function submitForm(form) {
+  const { kind, id } = editing, def = FORMS[kind], fd = new FormData(form), body = { kind };
+  for (const [k, l, t, o = {}] of def.fields) {
+    let v = fd.get(k);
+    if (t === 'money') { v = moneyVal(v); if (Number.isNaN(v)) return formErr(`${l} needs to be a number.`); }
+    else v = (v ?? '').toString().trim() || null;
+    if (o.req && v == null) return formErr(`Please fill in ${l.toLowerCase()}.`);
+    body[k] = v;
+  }
+  let docId = id;
+  if (kind === 'client') { body.n = id ? (docs[id].n ?? Date.now()) : Date.now(); docId = id || newId('c'); }
+  if (kind === 'expense') docId = id || newId('e');
+  if (kind === 'other') docId = id || newId('o');
+  if (kind === 'nw') {
+    body.month = body.month + '-01'; docId = 'n-' + body.month.slice(0, 7);
+    if (docId !== id && docs[docId]) return formErr(`You already have ${dMonthLong(ser(body.month))}. Edit that row instead.`);
+    if (id && id !== docId) write(id, null);
+  }
+  write(docId, body);
+  closeForm(); toast(id ? 'Saved' : 'Added');
+}
+function formErr(m) { const e = document.getElementById('ferr'); e.textContent = m; e.hidden = false; }
+
+/* ============ events ============ */
+function go(t) { tab = t; try { history.replaceState(null, '', '#' + t); } catch {} renderTabs(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('button,tr[data-edit]'); if (!b) return;
+  if (b.dataset.auth) return doAuth(b.dataset.auth);
+  if (b.hasAttribute('data-export')) return exportBackup();
+  if (b.hasAttribute('data-import')) return document.getElementById('importFile').click();
+  if (b.hasAttribute('data-signout')) { closeForm(); tab = 'home'; renderTabs(); return firebase.auth().signOut(); }
+  if (b.dataset.tab) return go(b.dataset.tab);
+  if (b.dataset.bnav) return b.dataset.bnav === 'more' ? openMore() : go(b.dataset.bnav);
+  if (b.id === 'fab') return b.dataset.fab === 'quick' ? openQuick() : openForm(b.dataset.fab);
+  if (b.dataset.menu) { const [a, k] = b.dataset.menu.split(':'); closeForm(); if (a === 'go') return go(k); if (a === 'add') return openForm(k); if (a === 'skins') return openSkins(); return; }
+  if (b.hasAttribute('data-skins')) return openSkins();
+  if (b.dataset.skinPick) { const inSheet = !!b.closest('#sheet'); if (inSheet) closeForm(); return chooseSkin(b.dataset.skinPick); }
+  if (b.dataset.go) return go(b.dataset.go);
+  if (b.dataset.guide) { const g = b.dataset.guide; if (g === 'client' || g === 'expense' || g === 'nw') return openForm(g); if (g === 'other-add') return openForm('other'); return go(g); }
+  if (b.dataset.add) return openForm(b.dataset.add);
+  if (b.dataset.edit) return openForm(b.dataset.edit, b.dataset.id);
+  if (b.hasAttribute('data-close')) return closeForm();
+  if (b.hasAttribute('data-toggle-pay')) { showAllPaydays = !showAllPaydays; return render(); }
+  if (b.hasAttribute('data-del')) {
+    if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Tap again to delete'; setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Delete'; }, 3500); return; }
+    const id = editing.id; write(id, null); closeForm(); toast('Deleted');
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && editing) closeForm();
+  if (e.key === 'Enter' && e.target.matches('tr[data-edit]')) openForm(e.target.dataset.edit, e.target.dataset.id);
+});
+document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeForm(); });
+document.addEventListener('submit', e => {
+  if (e.target.id === 'form') { e.preventDefault(); submitForm(e.target); }
+  if (e.target.id === 'authform') { e.preventDefault(); doAuth('in'); }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.dataset.pay) {
+    const date = t.dataset.pay, id = 'p-' + date, cur = docs[id] || { kind: 'payday', date };
+    const v = moneyVal(t.value); if (Number.isNaN(v)) { toast('Type a number, like 2525'); t.value = cur[t.dataset.field] ?? ''; return; }
+    const body = { ...cur, kind: 'payday', date, [t.dataset.field]: v };
+    write(id, body.received == null && body.moved == null ? null : body);
+  }
+  if (t.dataset.set) {
+    const k = t.dataset.set, f = SETTINGS_FIELDS.find(x => x[0] === k);
+    let v = f[2] === 'date' ? t.value : moneyVal(t.value);
+    if (v == null || v === '' || Number.isNaN(v)) { toast('That setting needs a value.'); return scheduleRender(); }
+    if (f[2] === '%') v = v / 100;
+    write('settings', { ...S.settings, [k]: v });
+  }
+  if (t.dataset.ms) {
+    const i = +t.dataset.ms, k = t.dataset.k, ms = S.settings.milestones.map(x => ({ ...x }));
+    let v = t.value; if (k === 'amount') { v = moneyVal(v); if (v == null || Number.isNaN(v)) { toast('Type an amount, like 10000'); return scheduleRender(); } }
+    ms[i][k] = v; write('settings', { ...S.settings, milestones: ms });
+  }
+});
+let toastT;
+function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+window.__moneyTracker = { compute, ser, isoOf };
+boot();
+</script>
+</body>
+</html>
