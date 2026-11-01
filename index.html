@@ -438,27 +438,19 @@ button,a,input,select{touch-action:manipulation}
 .pad .key-text{background:none;border:0;color:var(--on-bg);font-size:14px;font-weight:700}
 .pad .key-text svg{width:28px;height:28px}
 /* wrong passcode: the verdict */
-#lock.quake{animation:quake .6s cubic-bezier(.36,.07,.19,.97) both}
-@keyframes quake{8%{transform:translate(-14px,7px) rotate(-1.8deg)}18%{transform:translate(16px,-9px) rotate(1.8deg)}28%{transform:translate(-18px,5px) rotate(-1.2deg)}40%{transform:translate(13px,9px) rotate(1deg)}55%{transform:translate(-9px,-5px)}70%{transform:translate(6px,3px)}85%{transform:translate(-3px,0)}100%{transform:none}}
+/* only transform and opacity animate, on layers promoted up front, so it plays smoothly and the text stays sharp */
+.lock-body{display:flex;flex-direction:column;align-items:center;gap:22px;will-change:transform}
+.lock-body.quake{animation:quake .5s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes quake{10%{transform:translate3d(-13px,6px,0)}20%{transform:translate3d(15px,-7px,0)}32%{transform:translate3d(-14px,4px,0)}45%{transform:translate3d(10px,6px,0)}60%{transform:translate3d(-6px,-3px,0)}78%{transform:translate3d(3px,1px,0)}100%{transform:none}}
 .fy-wrap{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
-.fy-flash{position:absolute;inset:-20px;background:radial-gradient(circle at 50% 42%,rgba(255,70,20,.8),rgba(150,0,0,.6) 45%,rgba(0,0,0,.7));animation:fyflash 1.85s ease-out both}
-@keyframes fyflash{0%{opacity:0}5%{opacity:1}12%{opacity:.6}18%{opacity:.95}45%{opacity:.75}100%{opacity:0}}
-.fy-ring{position:absolute;left:50%;top:42%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:6px solid rgba(255,200,100,.95);
-  box-shadow:0 0 30px rgba(255,90,20,.95),inset 0 0 20px rgba(255,90,20,.8);animation:fyring .75s cubic-bezier(.1,.7,.3,1) both}
-.fy-ring.r2{animation-delay:.13s;border-color:rgba(255,50,40,.85)}
-@keyframes fyring{from{transform:scale(.2);opacity:1}to{transform:scale(24);opacity:0}}
+.fy-flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#ff4a1a 0,#9e0000 50%,#140000 100%);opacity:0;will-change:opacity;animation:fyflash 1.6s ease-out both}
+@keyframes fyflash{0%{opacity:0}6%{opacity:.95}13%{opacity:.7}20%{opacity:.9}100%{opacity:0}}
 .fy-sparks{position:absolute;inset:0;width:100%;height:100%}
-.fy{position:absolute;left:0;right:0;top:42%;display:flex;flex-direction:column;align-items:center;gap:.04em;
-  font:900 clamp(66px,23vw,160px)/.86 "Unbounded","Impact","Arial Black",sans-serif;letter-spacing:-.02em;color:#fff7ec;
-  text-shadow:0 0 10px #ff4a1f,0 0 34px #ff2a00,0 0 90px #b30000,5px 0 0 rgba(0,240,255,.55),-5px 0 0 rgba(255,0,70,.75);
-  animation:fyslam 1.85s cubic-bezier(.2,1.4,.3,1) both}
-@keyframes fyslam{0%{transform:translateY(-50%) scale(4.2) rotate(-9deg);opacity:0;filter:blur(16px)}
-  11%{transform:translateY(-50%) scale(.9) rotate(2deg);opacity:1;filter:blur(0)}
-  17%{transform:translateY(-50%) scale(1.07) rotate(-1deg)}23%,72%{transform:translateY(-50%) scale(1) rotate(0)}
-  82%{opacity:1}100%{transform:translateY(-50%) scale(1.18);opacity:0;filter:blur(8px)}}
-.fy span{display:block;animation:fyflicker .12s steps(2) 3 .2s}
-.fy span:last-child{animation-delay:.28s}
-@keyframes fyflicker{50%{opacity:.55;transform:translateX(4px)}}
+.fy{position:absolute;inset:0 0 16vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font:800 clamp(64px,22vw,150px)/.9 "Unbounded","Arial Black",sans-serif;letter-spacing:-.02em;color:#fff;
+  text-shadow:3px 0 0 rgba(0,230,255,.6),-3px 0 0 rgba(255,0,60,.75),0 0 18px rgba(255,80,20,.7);
+  opacity:0;will-change:transform,opacity;animation:fyslam 1.6s cubic-bezier(.2,1.3,.35,1) both}
+@keyframes fyslam{0%{transform:scale(1.7);opacity:0}9%{transform:scale(.94);opacity:1}15%{transform:scale(1.03)}21%,76%{transform:scale(1);opacity:1}100%{transform:scale(1.03);opacity:0}}
 .lock-link{background:none;border:0;color:var(--on-bg-muted);font:600 13.5px var(--f-body);text-decoration:underline;cursor:pointer}
 @media (max-width:760px){
   body{font-size:15px;overscroll-behavior-y:none}
@@ -890,6 +882,8 @@ const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 function showLock(mode = 'unlock', msg = '') {
   Object.assign(lock, { on: true, mode, entry: '', first: '', msg, shake: false });
   document.documentElement.classList.add('locked');
+  // fetch the verdict's font now, so a wrong code never waits on a download mid-animation
+  try { document.fonts && document.fonts.load('800 80px "Unbounded"', 'FUCK YOU'); } catch {}
   drawLock();
   if (mode === 'unlock' && faceIdReady()) tryFaceId(true);
 }
@@ -905,11 +899,11 @@ function drawLock() {
   const face = lock.mode === 'unlock' && faceIdReady()
     ? `<button class="key-text" data-pin="face" aria-label="Use Face ID"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 9.5v1M15 9.5v1M12 9v4h-1M9.5 16a4 4 0 0 0 5 0"/></svg></button>`
     : setup ? '<button class="key-text" data-pin="cancel">Cancel</button>' : '<span></span>';
-  el.innerHTML = `<div class="lock-top"><div class="logo"><b>$</b></div><h2>${titles[lock.mode]}</h2></div>
+  el.innerHTML = `<div class="lock-body"><div class="lock-top"><div class="logo"><b>$</b></div><h2>${titles[lock.mode]}</h2></div>
     <div class="pdots ${lock.shake ? 'shake' : ''}" aria-label="${lock.entry.length} of 4 digits entered">${[0, 1, 2, 3].map(i => `<i class="${i < lock.entry.length ? 'f' : ''}"></i>`).join('')}</div>
     <p class="lock-msg" role="status">${esc(lock.msg)}</p>
     <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => `<button data-pin="${d}">${d}</button>`).join('')}${face}<button data-pin="0">0</button><button class="key-text" data-pin="del" aria-label="Delete">⌫</button></div>
-    ${lock.mode === 'unlock' && mode === 'db' ? '<button class="lock-link" data-pin="forgot">Forgot passcode? Sign in again to reset it</button>' : ''}`;
+    ${lock.mode === 'unlock' && mode === 'db' ? '<button class="lock-link" data-pin="forgot">Forgot passcode? Sign in again to reset it</button>' : ''}</div>`;
   lock.shake = false;
   if (lock.boom) { lock.boom = false; boom(); }
 }
@@ -917,37 +911,46 @@ function drawLock() {
 function boom() {
   const el = document.getElementById('lock'); if (!el || el.hidden) return;
   try { navigator.vibrate && navigator.vibrate([90, 50, 180]); } catch {}
-  el.classList.remove('quake'); void el.offsetWidth; el.classList.add('quake');
+  const body = el.querySelector('.lock-body');
+  if (body) { body.classList.remove('quake'); void body.offsetWidth; body.classList.add('quake'); }
   el.querySelectorAll('.fy-wrap').forEach(n => n.remove());
   const fx = document.createElement('div'); fx.className = 'fy-wrap'; fx.setAttribute('aria-hidden', 'true');
-  fx.innerHTML = '<i class="fy-flash"></i><i class="fy-ring"></i><i class="fy-ring r2"></i><canvas class="fy-sparks"></canvas><div class="fy"><span>FUCK</span><span>YOU</span></div>';
+  fx.innerHTML = '<i class="fy-flash"></i><canvas class="fy-sparks"></canvas><div class="fy"><span>FUCK</span><span>YOU</span></div>';
   el.appendChild(fx);
-  sparks(fx.querySelector('canvas'));
-  setTimeout(() => el.classList.remove('quake'), 650);
-  setTimeout(() => fx.remove(), 1900);
+  blast(fx.querySelector('canvas'));
+  setTimeout(() => fx.remove(), 1650);
 }
-function sparks(cv) {
+// shockwave rings and sparks, all drawn on one canvas; time-based so a slow frame never stretches it out
+function blast(cv) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const dpr = Math.min(2, window.devicePixelRatio || 1), W = innerWidth, H = innerHeight, cx = W / 2, cy = H * 0.42;
-  cv.width = W * dpr; cv.height = H * dpr;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = innerWidth, H = innerHeight, cx = W / 2, cy = H * 0.42, reach = Math.hypot(W, H) * 0.7;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
   const g = cv.getContext('2d'); g.scale(dpr, dpr);
-  const P = Array.from({ length: 120 }, () => {
-    const a = Math.random() * Math.PI * 2, v = 4 + Math.random() * 14;
-    return { x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 3, hue: Math.random() < 0.75 ? 8 + Math.random() * 32 : 48, size: 1.5 + Math.random() * 3.2 };
+  const P = Array.from({ length: 70 }, () => {
+    const a = Math.random() * Math.PI * 2, v = 260 + Math.random() * 640;
+    return { a, v, hue: Math.random() < 0.75 ? 10 + Math.random() * 30 : 48, size: 1.6 + Math.random() * 2.6 };
   });
-  const t0 = performance.now();
+  const rings = [{ delay: 0, col: '255,210,120' }, { delay: 0.12, col: '255,80,50' }];
+  const t0 = performance.now(), dur = 1.25;
   const step = t => {
-    const life = 1 - (t - t0) / 1300;
+    const s = (t - t0) / 1000;
     g.clearRect(0, 0, W, H);
-    if (life <= 0) return;
-    g.globalCompositeOperation = 'lighter';
-    for (const p of P) {
-      p.vx *= 0.97; p.vy = p.vy * 0.97 + 0.35; p.x += p.vx; p.y += p.vy;
-      g.strokeStyle = `hsla(${p.hue},100%,60%,${life * 0.55})`; g.lineWidth = p.size * 0.7;
-      g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - p.vx * 2.4, p.y - p.vy * 2.4); g.stroke();
-      g.fillStyle = `hsla(${p.hue},100%,${55 + life * 30}%,${life})`;
-      g.beginPath(); g.arc(p.x, p.y, p.size * life + 0.5, 0, 7); g.fill();
+    if (s >= dur) return;
+    for (const r of rings) {
+      const k = (s - r.delay) / 0.65; if (k <= 0 || k >= 1) continue;
+      const e = 1 - Math.pow(1 - k, 3);
+      g.strokeStyle = `rgba(${r.col},${1 - k})`; g.lineWidth = 2 + 6 * (1 - k);
+      g.beginPath(); g.arc(cx, cy, 10 + e * reach, 0, Math.PI * 2); g.stroke();
     }
+    g.globalCompositeOperation = 'lighter';
+    const life = 1 - s / dur, drag = 1 - Math.exp(-2.2 * s);
+    for (const p of P) {
+      const d = (p.v / 2.2) * drag, x = cx + Math.cos(p.a) * d, y = cy + Math.sin(p.a) * d + 260 * s * s;
+      const tx = Math.cos(p.a) * p.v * Math.exp(-2.2 * s) * 0.035, ty = Math.sin(p.a) * p.v * Math.exp(-2.2 * s) * 0.035 + 18 * s;
+      g.strokeStyle = `hsla(${p.hue},100%,62%,${life})`; g.lineWidth = p.size;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x - tx, y - ty); g.stroke();
+    }
+    g.globalCompositeOperation = 'source-over';
     requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
