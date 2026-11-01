@@ -1389,11 +1389,11 @@ function vNetWorth() {
       <div><small>Checking / Savings</small><span class="typein">${blank(r.checking) ? '—' : $2(num(r.checking))}</span></div>
       <div><small>Money Market</small><span class="typein">${blank(r.mm) ? '—' : $2(num(r.mm))}</span></div>
       <div><small>Investments</small><span class="typein">${blank(r.invest) ? '—' : $2(num(r.invest))}</span></div>
-      <div><small>Fun / Crypto</small><span class="typein">${blank(r.fun) ? '—' : $2(num(r.fun))}</span></div>
+      <div><small>Crypto</small><span class="typein">${blank(r.fun) ? '—' : $2(num(r.fun))}</span></div>
       <div><small>Cash total</small><span>${r.filled ? $2(r.cash) : '—'}</span></div>
       <div><small>Cash %</small><span>${cell(r.cashPct, v => pct(v, 1)) || '—'}</span></div>
     </div></button>`).join('') || '<div class="empty">No months yet.</div>'}</div>` : `<div class="tscroll"><table>
-    <thead><tr><th>Month</th><th>Checking / Savings</th><th>Money Market</th><th>Investments (Roth + brokerage)</th><th>Fun stocks / Crypto</th><th>Cash total</th><th>Investment total</th><th>Net worth</th><th>Change vs last month</th><th>Change %</th><th>Cash %</th></tr></thead>
+    <thead><tr><th>Month</th><th>Checking / Savings</th><th>Money Market</th><th>Investments (Roth + brokerage)</th><th>Crypto</th><th>Cash total</th><th>Investment total</th><th>Net worth</th><th>Change vs last month</th><th>Change %</th><th>Cash %</th></tr></thead>
     <tbody>${[...rows].reverse().map(r => `<tr class="click" data-edit="nw" data-id="${esc(r.id)}" tabindex="0">
       <td><b>${dMonth(r.s)}</b></td>
       ${['checking', 'mm', 'invest', 'fun'].map(k => `<td class="typein">${blank(r[k]) ? '' : $2(num(r[k]))}</td>`).join('')}
@@ -1520,7 +1520,7 @@ function drawCharts() {
     { label: 'Profit', data: ms.map(r => r.profit), backgroundColor: ms.map(r => r.profit >= 0 ? good : bad), borderRadius: 7, borderSkipped: false }
   ] }, options: baseOpts(false) });
   const L = R.nwLatest;
-  if (L) mkChart('chDonut', { type: 'doughnut', data: { labels: ['Cash', 'Investments', 'Fun / crypto'], datasets: [
+  if (L) mkChart('chDonut', { type: 'doughnut', data: { labels: ['Cash', 'Investments', 'Crypto'], datasets: [
     { data: [L.cash, num(L.invest), num(L.fun)], backgroundColor: [amb, teal, mag], borderColor: tok('--surface'), borderWidth: 3, hoverOffset: 8 }
   ] }, options: { responsive: true, maintainAspectRatio: false, cutout: '64%', animation: { animateRotate: true, duration: 1000 },
     plugins: { legend: { display: tab !== 'home', position: 'bottom', labels: { color: tok('--muted'), usePointStyle: true, boxWidth: 8, font: { weight: 700 } } },
@@ -1551,7 +1551,7 @@ const FORMS = {
   ] },
   expense: { title: 'Expense', fields: [['date', 'Date', 'date', { req: true }], ['amount', 'Amount', 'money', { req: true }], ['what', 'What', 'text', { wide: true }], ['category', 'Category', 'select', { opts: EXP_CATS, wide: true }]] },
   other: { title: 'Bonus or one-off pay', fields: [['date', 'Date', 'date', { req: true }], ['amount', 'Amount', 'money', { req: true }], ['desc', 'Description', 'text', { wide: true }]] },
-  nw: { title: 'Month-end balances', fields: [['month', 'Month', 'month', { req: true, wide: true }], ['checking', 'Checking / Savings', 'money'], ['mm', 'Money Market', 'money'], ['invest', 'Investments (Roth + brokerage)', 'money'], ['fun', 'Fun stocks / Crypto', 'money']] }
+  nw: { title: 'Month-end balances', fields: [['month', 'Month', 'month', { req: true, wide: true }], ['checking', 'Checking / Savings', 'money'], ['mm', 'Money Market', 'money'], ['invest', 'Investments (Roth + brokerage)', 'money'], ['fun', 'Crypto', 'money']] }
 };
 let editing = null;
 function openForm(kind, id) {
