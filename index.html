@@ -755,6 +755,16 @@ const DEFAULTS = {
   milestones: [{ amount: 10000, reward: 'Level 1 reward', icon: '🎯' }, { amount: 30000, reward: 'Level 2 reward', icon: '🏆' }]
 };
 const CLIENT_TYPES = ['New', 'Referral', 'Upsell'];
+const FREQS = ['Every 4 weeks', 'Weekly', 'Monthly'];
+const freqOf = c => FREQS.includes(c.freq) ? c.freq : 'Every 4 weeks';
+const FREQ_LBL = { 'Every 4 weeks': ['Every 4 weeks', 'every 4 wks', '4-week'], 'Weekly': ['Every week', 'every week', 'weekly'], 'Monthly': ['Every month', 'every month', 'monthly'] };
+// recurring payment schedule helpers: how many fall on or before t, and the date of the k-th (0-based)
+function schedCount(c, t) {
+  if (c.Q >= NONE || t < c.Q) return 0;
+  if (c.freq === 'Monthly') { const [y1, m1] = ymd(c.Q), [y2, m2] = ymd(t); let m = (y2 - y1) * 12 + m2 - m1; if (edate(c.Q, m) > t) m--; return m + 1; }
+  return Math.floor((t - c.Q) / c.step) + 1;
+}
+const schedAt = (c, k) => c.freq === 'Monthly' ? edate(c.Q, k) : c.Q + k * c.step;
 const EXP_CATS = ['Equipment', 'Software', 'Ads/Marketing', 'Phone/Internet', 'Home office', 'Travel/Mileage', 'Education', 'Other', 'From old sheet'];
 
 /* ============ the engine: every workbook formula, sheet by sheet ============ */
@@ -769,13 +779,19 @@ function compute(S, today) {
     const ref = c.type === 'Referral' || c.type === 'Upsell';
     const I = blank(c.p1) ? 0 : p1 * (ref ? st.commRef : st.commNew);
     const J = p2 * st.commRecur, K = p3 * st.commRecur;
-    const P = cancelS ?? NONE, Q = launchS != null ? launchS + num(st.launchDelay) : NONE;
+    const freq = freqOf(c), step = freq === 'Weekly' ? 7 : cyc, firstS = ser(c.firstRecur);
+    const P = cancelS ?? NONE;
+    // first recurring payment: typed date if given, otherwise one cycle after launch
+    const Q = firstS != null ? firstS : launchS == null ? NONE : freq === 'Monthly' ? edate(launchS, 1) : launchS + (freq === 'Weekly' ? 7 : num(st.launchDelay));
+    const sc = { freq, step, Q };
     let next;
-    if (launchS == null) next = 'Add launch date';
-    else { const n = today <= Q ? Q : Q + cyc * Math.ceil((today - Q) / cyc); next = n < P ? n : 'Cancelled'; }
-    const N = launchS == null ? 0 : Math.max(0, Math.floor((Math.min(today, P - 1) - Q) / cyc) + 1);
+    if (Q >= NONE) next = 'Add launch date';
+    else { const n = schedAt(sc, schedCount(sc, today - 1)); next = n < P ? n : 'Cancelled'; }
+    const N = Q >= NONE ? 0 : schedCount(sc, Math.min(today, P - 1));
     const O = I + (N >= 1 ? J + (N - 1) * K : 0);
-    return { ...c, p1, p2, p3, signedS, launchS, cancelS, I, J, K, P, Q, L: launchS == null ? null : Q, next, N, O, active: P > today };
+    // commission per 4 weeks, so weekly/monthly clients add up fairly with 4-week ones
+    const K4 = freq === 'Weekly' ? K * 28 / step : freq === 'Monthly' ? K * 28 * 12 / 365 : K;
+    return { ...c, freq, step, p1, p2, p3, signedS, launchS, cancelS, I, J, K, K4, P, Q, L: Q >= NONE ? null : Q, next, N, O, active: P > today, scheduled: Q < NONE };
   });
 
   const expenses = S.expenses.map(e => ({ ...e, s: ser(e.date), amt: num(e.amount) }));
@@ -786,7 +802,7 @@ function compute(S, today) {
   const first = ser(st.firstPayday) ?? mk(year, 1, 15);
   const monthsToToday = (ymd(today)[0] - ymd(first)[0]) * 12 + ymd(today)[1] - ymd(first)[1];
   const nPay = Math.max(80, monthsToToday + 14);
-  const cnt = (t, c) => { const cap = t < c.P ? t : c.P - 1; return cap >= c.Q ? Math.floor((cap - c.Q) / cyc) + 1 : 0; };
+  const cnt = (t, c) => schedCount(c, t < c.P ? t : c.P - 1);
   const paydays = [];
   for (let i = 0; i < nPay; i++) {
     const C = edate(first, i), B = edate(C, -1) + 1;
@@ -860,11 +876,11 @@ function compute(S, today) {
   const shouldTax = Math.max(0, profit) * tax;
   const movedTax = sum(paydays.filter(p => p.C >= jan1 && p.C <= today), p => p.moved || 0);
   const named = clients.filter(c => !blank(c.name));
-  const every4 = sum(named.filter(c => c.P > today), c => c.K);
+  const every4 = sum(named.filter(c => c.P > today), c => c.K4);
   const dash = {
     next, owed: sum(paydays, p => p.owe || 0),
     income, costs, profit, shouldTax, movedTax, shortfall: Math.max(0, shouldTax - movedTax),
-    signed: named.length, waiting: named.filter(c => c.launchS == null).length,
+    signed: named.length, waiting: named.filter(c => !c.scheduled).length,
     every4, perYear: every4 * 365 / cyc, earned: sum(clients, c => c.O)
   };
   return { clients, expenses, others, paydays, nextIdx, months, years, nwRows, nwLatest, best, bestMonth, levels, dash, today };
@@ -1455,7 +1471,7 @@ function levelCard(l, i) {
 
 function clientStatus(c) {
   if (c.cancelS != null && !c.active) return '<span class="chip bad">Cancelled</span>';
-  if (c.launchS == null) return '<span class="chip warn">Waiting on launch</span>';
+  if (!c.scheduled) return '<span class="chip warn">Waiting on launch</span>';
   if (c.cancelS != null) return '<span class="chip warn">Leaving ' + dShort(c.cancelS) + '</span>';
   return '<span class="chip good">Active</span>';
 }
@@ -1466,7 +1482,7 @@ function clientBiz(c) {
 }
 // phone: one compact row per client (name · company · payment); tapping a row opens its full details in place
 let openClient = null;
-const clientState = c => (c.cancelS != null && !c.active) ? 'bad' : c.launchS == null ? 'warn' : c.cancelS != null ? 'warn' : 'good';
+const clientState = c => (c.cancelS != null && !c.active) ? 'bad' : !c.scheduled ? 'warn' : c.cancelS != null ? 'warn' : 'good';
 const initials = s => String(s || '?').replace(/^Example:\s*/, '').split(/[^A-Za-z0-9]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
 const nameHue = s => [...String(s || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 7);
 function clientKv(c) {
@@ -1476,12 +1492,12 @@ function clientKv(c) {
         <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
         <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
         <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
-        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][0]}</small><span>${$2(c.K)}</span></div>
         <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
         <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
         <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
-        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
-        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
+        <div><small>First ${FREQ_LBL[c.freq][2]}</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][2][0].toUpperCase() + FREQ_LBL[c.freq][2].slice(1)} pmts so far</small><span>${c.N}</span></div>
         <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
       </div>`;
 }
@@ -1491,7 +1507,7 @@ function clientRow(c) {
     <button class="crow-h" data-toggle-client="${esc(c.id)}" aria-expanded="${open}">
       <span class="cav" style="--h:${nameHue(c.name)}">${esc(initials(c.name))}<i class="cdot ${clientState(c)}"></i></span>
       <span class="cmain"><b>${esc(c.name)}</b><small>${esc(c.business || 'No company')}</small></span>
-      <span class="camt"><b>${$0(c.p3)}</b><small>every 4 wks</small></span>
+      <span class="camt"><b>${$0(c.p3)}</b><small>${FREQ_LBL[c.freq][1]}</small></span>
     </button>
     ${open ? `<div class="cbody">
       <div class="cbody-h">${clientBiz(c) || ''}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}<span class="chip">Earned ${$0(c.O)}</span></div></div>
@@ -1504,7 +1520,7 @@ function vClients() {
   const d = R.dash;
   return `
   <div class="head"><div><span class="eyebrow">Clients</span><h1>${d.signed} signed · ${$0(d.every4)} every 4 weeks</h1>
-    <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every 4-week payment = ${pct(S.settings.commRecur)}.</p></div>
+    <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every recurring payment (4-week, weekly or monthly) = ${pct(S.settings.commRecur)}.</p></div>
     <button class="btn" data-add="client">+ Add client</button></div>
   ${isPhone() ? `<div class="clist">${R.clients.map(clientRow).join('') || '<div class="empty">No clients yet. Tap + to add the first one you sign.</div>'}</div>` : `<div class="list">${R.clients.map(c => `
     <button class="item" data-edit="client" data-id="${esc(c.id)}">
@@ -1516,12 +1532,12 @@ function vClients() {
         <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
         <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
         <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
-        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][0]}</small><span>${$2(c.K)}</span></div>
         <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
         <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
         <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
-        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
-        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
+        <div><small>First ${FREQ_LBL[c.freq][2]}</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][2][0].toUpperCase() + FREQ_LBL[c.freq][2].slice(1)} pmts so far</small><span>${c.N}</span></div>
         <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
       </div>
     </button>`).join('') || '<div class="empty">No clients yet. Add the first one you sign.</div>'}
@@ -1895,8 +1911,10 @@ const FORMS = {
   client: { title: 'Client', fields: [
     ['name', 'Client name', 'text', { req: true, wide: true }], ['business', 'Business name', 'text', { wide: true }],
     ['p1', '1st payment (at signup)', 'money'], ['signed', 'Date signed (1st payment)', 'date'], ['type', 'Type', 'select', { opts: CLIENT_TYPES }],
-    ['launch', 'Campaign launch', 'date', { help: '4-week payments start 4 weeks later.' }],
-    ['p2', '2nd payment (1st 4-week)', 'money', { more: true, ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
+    ['launch', 'Campaign launch', 'date', { help: 'Recurring payments start one cycle later.' }],
+    ['freq', 'Pays', 'select', { opts: FREQS }],
+    ['firstRecur', 'First recurring payment date', 'date', { help: 'Optional. Set it if they pay on fixed dates (weekly/monthly); otherwise counted from launch.' }],
+    ['p2', '2nd payment (1st recurring)', 'money', { more: true, ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
     ['p3', '3rd payment & after', 'money', { more: true, ph: 'Same as 2nd', help: 'Type a number if payments step up (e.g. 3,000 → 3,250 → 3,500).' }],
     ['city', 'City', 'text', { more: true }], ['state', 'State', 'text', { more: true, ph: 'e.g. WI' }],
     ['cancel', 'Cancel date (if they leave)', 'date', { more: true, wide: true, help: 'Payments on or after it stop counting.' }]
