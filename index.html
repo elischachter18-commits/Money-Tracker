@@ -360,6 +360,69 @@ h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.0
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='54' viewBox='0 0 22 54'%3E%3Cpath d='M15 18V9a4 4 0 0 0-8 0v34a6 6 0 0 0 12 0V12' fill='none' stroke='%23a7a9ad' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
 @media (max-width:760px){[data-skin="sv"] .head>div:first-child{padding-right:84px}[data-skin="sv"] .head>div:first-child::after{font-size:13px;top:0}}
 
+/* ================= upsell ranks: a glowing badge, a living ring around the client, a special map pin; stronger at each level ================= */
+.tier{--t1:#5b3df0;--t2:#e3226b;--t3:#f29a00;--t4:#0ea894;--tg:rgba(227,34,107,.6);--tfg:#fff;
+  display:inline-flex;align-items:center;gap:6px;padding:3px 11px 3px 8px;border-radius:99px;font:800 11.5px/1.3 var(--f-body);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;vertical-align:middle;
+  color:var(--tfg);background:linear-gradient(110deg,var(--t1),var(--t2),var(--t3),var(--t4),var(--t1));background-size:300% 100%;animation:tierflow 4s linear infinite;box-shadow:0 0 10px var(--tg)}
+.tier i::before{content:"◆";font-style:normal}
+.tier.lv2{box-shadow:0 0 14px var(--tg),0 0 26px var(--tg)}
+.tier.lv3{box-shadow:0 0 0 2px #fff,0 0 18px var(--tg),0 0 36px var(--tg);animation-duration:2.4s}
+@keyframes tierflow{to{background-position:300% 0}}
+.tiered{position:relative;--t1:#5b3df0;--t2:#e3226b;--t3:#f29a00;--t4:#0ea894;--tg:rgba(227,34,107,.45)}
+.tiered::before{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;padding:2px;pointer-events:none;background:linear-gradient(110deg,var(--t1),var(--t2),var(--t3),var(--t4),var(--t1));background-size:300% 100%;animation:tierflow 4s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.item.tiered,.crow.tiered{box-shadow:0 0 22px -4px var(--tg)}
+.tiered.lv2{box-shadow:0 0 30px -2px var(--tg)} .tiered.lv3{box-shadow:0 0 40px 0 var(--tg)} .tiered.lv3::before{padding:3px;animation-duration:2.4s}
+.crow.tiered .cav{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--t2),0 0 18px var(--t2)}
+.crow .cmain small .tier{font-size:10px;padding:1px 8px 1px 6px;margin-right:4px}
+.ups{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--t2,#e3226b) 8%,transparent);border:1px dashed color-mix(in srgb,var(--t2,#e3226b) 40%,var(--line))}
+.up{display:flex;flex-direction:column;gap:8px}
+.up+.up{padding-top:10px;border-top:1px dashed var(--line)}
+.up .btn{align-self:flex-start}
+.mpin.tier{--tc:#fff;--tg:#e3226b;z-index:3}
+.mpin.tier .ph{background:conic-gradient(#5b3df0,#e3226b,#f29a00,#0ea894,#5b3df0);box-shadow:0 0 0 2px #fff,0 0 16px var(--tg),0 0 30px var(--tg);animation:tierspin 3s linear infinite}
+@keyframes tierspin{to{rotate:360deg}}
+.mpin.tier .pglow{position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--tc);opacity:.8;animation:mping 1.8s ease-out infinite}
+.mpin.tier.lv2 .ph{inset:7px} .mpin.tier.lv3 .ph{inset:5px;box-shadow:0 0 0 3px #fff,0 0 22px var(--tg),0 0 44px var(--tg)}
+
+/* Middle Earth: mithril, silver-white and shining, rimmed in gold */
+[data-skin="me"] .tier,[data-skin="me"] .tiered{--t1:#cfd8de;--t2:#ffffff;--t3:#aeb9c1;--t4:#f4f7f9;--tg:rgba(200,225,255,.85);--tfg:#2b3640}
+[data-skin="me"] .tier{border:1px solid #d4a640;font-family:"Cinzel",serif}
+[data-skin="me"] .tier i::before{content:"✦";color:#b8860b}
+[data-skin="me"] .crow.tiered .cav{box-shadow:0 0 0 3px var(--surface),0 0 0 5px #d4a640,0 0 18px rgba(255,255,255,.9)}
+[data-skin="me"] .mpin.tier{--tc:#f6f9fb;--tg:rgba(220,235,255,.95)}
+[data-skin="me"] .mpin.tier .ph{background:radial-gradient(circle at 35% 30%,#ffffff,#c9d3da 60%,#8e9ba4);border:2px solid #d4a640;animation:none}
+[data-skin="me"] .mpin.tier .ph::after{content:"✦";color:#b8860b}
+
+/* Breaking Bad: purity, crystal blue that gets bluer and brighter */
+[data-skin="bb"] .tier,[data-skin="bb"] .tiered{--t1:#1a8fd0;--t2:#3FD0F5;--t3:#d9f8ff;--t4:#3FD0F5;--tg:rgba(63,208,245,.7);--tfg:#03141c}
+[data-skin="bb"] .tier{border-radius:3px;font-family:"IBM Plex Mono",monospace}
+[data-skin="bb"] .tier i::before{content:"⬢"}
+[data-skin="bb"] .crow.tiered .cav{border-radius:6px;box-shadow:0 0 0 3px var(--surface),0 0 0 5px #3FD0F5,0 0 20px #3FD0F5}
+[data-skin="bb"] .mpin.tier{--tc:#d9f8ff;--tg:#3FD0F5}
+[data-skin="bb"] .mpin.tier .ph{border-radius:2px;transform:rotate(45deg);background:linear-gradient(135deg,#ffffff,#8be6ff 40%,#3FD0F5 70%,#1a8fd0);animation:none;box-shadow:0 0 0 2px #e6f2e4,0 0 18px #3FD0F5,0 0 36px #3FD0F5}
+[data-skin="bb"] .mpin.tier .pglow{border-radius:4px}
+
+/* Berserk: chosen, a red-gold blaze */
+[data-skin="bk"] .tier,[data-skin="bk"] .tiered{--t1:#5e0b10;--t2:#d4261e;--t3:#e3b64a;--t4:#ff6a2a;--tg:rgba(255,70,30,.7);--tfg:#fff3e0}
+[data-skin="bk"] .tier{border-radius:0;font-family:"Spectral",serif;letter-spacing:.14em}
+[data-skin="bk"] .tier i::before{content:"✠";color:#ffe9a8}
+[data-skin="bk"] .crow.tiered .cav{box-shadow:0 0 0 3px var(--surface),0 0 0 5px #e3b64a,0 0 22px #ff3b1f}
+[data-skin="bk"] .mpin.tier{--tc:#e3b64a;--tg:#ff3b1f}
+[data-skin="bk"] .mpin.tier .ph{background:linear-gradient(180deg,#ffe9a8,#e3b64a 40%,#d4261e);animation:none;filter:drop-shadow(0 0 8px #ff3b1f) drop-shadow(0 0 4px #e3b64a)}
+[data-skin="bk"] .mpin.tier .pglow{border-radius:0;transform:rotate(45deg)}
+
+/* Seven: circled on the board, stamped, and moving up the suspect list */
+[data-skin="sv"] .tier,[data-skin="sv"] .tiered{--t1:#8E1B12;--t2:#b3121b;--t3:#8E1B12;--t4:#c0181c;--tg:rgba(142,27,18,.35);--tfg:#8E1B12}
+[data-skin="sv"] .tier{background:transparent;animation:none;box-shadow:none;border:2px solid #8E1B12;border-radius:50% 44% 52% 46%/60% 50% 56% 48%;font-family:"Special Elite",monospace;transform:rotate(-3deg)}
+[data-skin="sv"] .tier i::before{content:"◎"}
+[data-skin="sv"] .tier.lv3{background:#8E1B12;color:#EFE5CB}
+[data-skin="sv"] .tiered::before{animation:none;background:#8E1B12;border-radius:46% 4% 40% 6%/8% 44% 6% 40%;inset:-4px;padding:2px}
+[data-skin="sv"] .crow.tiered .cav{box-shadow:0 0 0 3px var(--surface),0 0 0 5px #8E1B12}
+[data-skin="sv"] .mpin.tier{--tc:#8E1B12;--tg:transparent}
+[data-skin="sv"] .mpin.tier .ph{background:radial-gradient(circle at 35% 30%,#fff3b0,#d4a017 55%,#7a5a00);animation:none;box-shadow:2px 4px 4px rgba(0,0,0,.5)}
+[data-skin="sv"] .mpin.tier .pglow{inset:-4px;border:2.5px solid #8E1B12;border-radius:48% 52% 44% 56%/55% 45% 58% 42%;animation:none;opacity:.95}
+
 /* phone client list: compact rows that open in place */
 .clist{display:flex;flex-direction:column;gap:8px}
 .crow{background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);overflow:hidden;transition:border-color .2s,box-shadow .2s}
@@ -755,16 +818,6 @@ const DEFAULTS = {
   milestones: [{ amount: 10000, reward: 'Level 1 reward', icon: '🎯' }, { amount: 30000, reward: 'Level 2 reward', icon: '🏆' }]
 };
 const CLIENT_TYPES = ['New', 'Referral', 'Upsell'];
-const FREQS = ['Every 4 weeks', 'Weekly', 'Monthly'];
-const freqOf = c => FREQS.includes(c.freq) ? c.freq : 'Every 4 weeks';
-const FREQ_LBL = { 'Every 4 weeks': ['Every 4 weeks', 'every 4 wks', '4-week'], 'Weekly': ['Every week', 'every week', 'weekly'], 'Monthly': ['Every month', 'every month', 'monthly'] };
-// recurring payment schedule helpers: how many fall on or before t, and the date of the k-th (0-based)
-function schedCount(c, t) {
-  if (c.Q >= NONE || t < c.Q) return 0;
-  if (c.freq === 'Monthly') { const [y1, m1] = ymd(c.Q), [y2, m2] = ymd(t); let m = (y2 - y1) * 12 + m2 - m1; if (edate(c.Q, m) > t) m--; return m + 1; }
-  return Math.floor((t - c.Q) / c.step) + 1;
-}
-const schedAt = (c, k) => c.freq === 'Monthly' ? edate(c.Q, k) : c.Q + k * c.step;
 const EXP_CATS = ['Equipment', 'Software', 'Ads/Marketing', 'Phone/Internet', 'Home office', 'Travel/Mileage', 'Education', 'Other', 'From old sheet'];
 
 /* ============ the engine: every workbook formula, sheet by sheet ============ */
@@ -779,20 +832,24 @@ function compute(S, today) {
     const ref = c.type === 'Referral' || c.type === 'Upsell';
     const I = blank(c.p1) ? 0 : p1 * (ref ? st.commRef : st.commNew);
     const J = p2 * st.commRecur, K = p3 * st.commRecur;
-    const freq = freqOf(c), step = freq === 'Weekly' ? 7 : cyc, firstS = ser(c.firstRecur);
-    const P = cancelS ?? NONE;
-    // first recurring payment: typed date if given, otherwise one cycle after launch
-    const Q = firstS != null ? firstS : launchS == null ? NONE : freq === 'Monthly' ? edate(launchS, 1) : launchS + (freq === 'Weekly' ? 7 : num(st.launchDelay));
-    const sc = { freq, step, Q };
+    const P = cancelS ?? NONE, Q = launchS != null ? launchS + num(st.launchDelay) : NONE;
     let next;
-    if (Q >= NONE) next = 'Add launch date';
-    else { const n = schedAt(sc, schedCount(sc, today - 1)); next = n < P ? n : 'Cancelled'; }
-    const N = Q >= NONE ? 0 : schedCount(sc, Math.min(today, P - 1));
+    if (launchS == null) next = 'Add launch date';
+    else { const n = today <= Q ? Q : Q + cyc * Math.ceil((today - Q) / cyc); next = n < P ? n : 'Cancelled'; }
+    const N = launchS == null ? 0 : Math.max(0, Math.floor((Math.min(today, P - 1) - Q) / cyc) + 1);
     const O = I + (N >= 1 ? J + (N - 1) * K : 0);
-    // commission per 4 weeks, so weekly/monthly clients add up fairly with 4-week ones
-    const K4 = freq === 'Weekly' ? K * 28 / step : freq === 'Monthly' ? K * 28 * 12 / 365 : K;
-    return { ...c, freq, step, p1, p2, p3, signedS, launchS, cancelS, I, J, K, K4, P, Q, L: Q >= NONE ? null : Q, next, N, O, active: P > today, scheduled: Q < NONE };
+    return { ...c, p1, p2, p3, signedS, launchS, cancelS, I, J, K, P, Q, L: launchS == null ? null : Q, next, N, O, active: P > today, upsells: [] };
   });
+  // an upsell belongs to the client it was sold to (its "parent" link, else the client with the same name); it still earns, but isn't another client
+  const byId = new Map(clients.map(c => [c.id, c]));
+  const sameName = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+  for (const c of clients) {
+    if (c.type !== 'Upsell') continue;
+    let p = c.parent ? byId.get(c.parent) : null;
+    if (!p || p.type === 'Upsell') p = clients.find(x => x !== c && x.type !== 'Upsell' && !blank(x.name) && sameName(x.name, c.name));
+    if (p) { c.parentId = p.id; c.isUpsell = true; p.upsells.push(c); }
+  }
+  clients.forEach(c => { c.tier = c.upsells.length; });
 
   const expenses = S.expenses.map(e => ({ ...e, s: ser(e.date), amt: num(e.amount) }));
   const others = S.others.map(o => ({ ...o, s: ser(o.date), amt: num(o.amount) }));
@@ -802,7 +859,7 @@ function compute(S, today) {
   const first = ser(st.firstPayday) ?? mk(year, 1, 15);
   const monthsToToday = (ymd(today)[0] - ymd(first)[0]) * 12 + ymd(today)[1] - ymd(first)[1];
   const nPay = Math.max(80, monthsToToday + 14);
-  const cnt = (t, c) => schedCount(c, t < c.P ? t : c.P - 1);
+  const cnt = (t, c) => { const cap = t < c.P ? t : c.P - 1; return cap >= c.Q ? Math.floor((cap - c.Q) / cyc) + 1 : 0; };
   const paydays = [];
   for (let i = 0; i < nPay; i++) {
     const C = edate(first, i), B = edate(C, -1) + 1;
@@ -876,11 +933,11 @@ function compute(S, today) {
   const shouldTax = Math.max(0, profit) * tax;
   const movedTax = sum(paydays.filter(p => p.C >= jan1 && p.C <= today), p => p.moved || 0);
   const named = clients.filter(c => !blank(c.name));
-  const every4 = sum(named.filter(c => c.P > today), c => c.K4);
+  const every4 = sum(named.filter(c => c.P > today), c => c.K);
   const dash = {
     next, owed: sum(paydays, p => p.owe || 0),
     income, costs, profit, shouldTax, movedTax, shortfall: Math.max(0, shouldTax - movedTax),
-    signed: named.length, waiting: named.filter(c => !c.scheduled).length,
+    signed: named.filter(c => !c.isUpsell).length, waiting: named.filter(c => !c.isUpsell && c.launchS == null).length, upsells: named.filter(c => c.isUpsell).length,
     every4, perYear: every4 * 365 / cyc, earned: sum(clients, c => c.O)
   };
   return { clients, expenses, others, paydays, nextIdx, months, years, nwRows, nwLatest, best, bestMonth, levels, dash, today };
@@ -1434,7 +1491,7 @@ function vHome() {
     </div>
     <div class="card"><div class="card-h"><h2>Clients</h2><button class="btn sm ghost" data-go="clients">Open</button></div>
       <div class="rows">
-        ${row('Clients signed', d.signed)}
+        ${row('Clients signed', d.signed)}${d.upsells ? row('Upsells', `<span class="tier lv1"><i></i>${d.upsells}</span>`) : ''}
         ${row('Waiting on a launch date', d.waiting ? `<span class="chip warn">${d.waiting}</span>` : '0')}
         ${row('Your cut every 4 weeks (all active)', $2(d.every4), 'hl')}
         ${row('Per year at that pace', $2(d.perYear))}
@@ -1471,7 +1528,7 @@ function levelCard(l, i) {
 
 function clientStatus(c) {
   if (c.cancelS != null && !c.active) return '<span class="chip bad">Cancelled</span>';
-  if (!c.scheduled) return '<span class="chip warn">Waiting on launch</span>';
+  if (c.launchS == null) return '<span class="chip warn">Waiting on launch</span>';
   if (c.cancelS != null) return '<span class="chip warn">Leaving ' + dShort(c.cancelS) + '</span>';
   return '<span class="chip good">Active</span>';
 }
@@ -1482,7 +1539,7 @@ function clientBiz(c) {
 }
 // phone: one compact row per client (name · company · payment); tapping a row opens its full details in place
 let openClient = null;
-const clientState = c => (c.cancelS != null && !c.active) ? 'bad' : !c.scheduled ? 'warn' : c.cancelS != null ? 'warn' : 'good';
+const clientState = c => (c.cancelS != null && !c.active) ? 'bad' : c.launchS == null ? 'warn' : c.cancelS != null ? 'warn' : 'good';
 const initials = s => String(s || '?').replace(/^Example:\s*/, '').split(/[^A-Za-z0-9]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
 const nameHue = s => [...String(s || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 7);
 function clientKv(c) {
@@ -1492,26 +1549,47 @@ function clientKv(c) {
         <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
         <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
         <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
-        <div><small>${FREQ_LBL[c.freq][0]}</small><span>${$2(c.K)}</span></div>
+        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
         <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
         <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
         <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
-        <div><small>First ${FREQ_LBL[c.freq][2]}</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
-        <div><small>${FREQ_LBL[c.freq][2][0].toUpperCase() + FREQ_LBL[c.freq][2].slice(1)} pmts so far</small><span>${c.N}</span></div>
+        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
         <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
       </div>`;
 }
+/* upsell ranks: each upsell takes a client up a level, named for the theme */
+const TIERS = { original: ['Diamond', 'Prismatic', 'Mythic'], me: ['Mithril', 'Ring-bearer', 'Kingly'], bb: ['96% Pure', '99.1% Pure', 'Blue Sky'], bk: ['Blooded', 'Apostle', 'Godhand'], sv: ['Person of Interest', 'Prime Suspect', 'Case Closed'] };
+const tierLevel = n => Math.min(n, 3);
+const tierName = n => n ? (TIERS[currentSkin] || TIERS.original)[tierLevel(n) - 1] : '';
+const tierBadge = c => c.tier ? `<span class="tier lv${tierLevel(c.tier)}" title="${c.tier} upsell${c.tier > 1 ? 's' : ''}"><i></i>${esc(tierName(c.tier))}</span>` : '';
+const withUpsells = (c, f) => f(c) + sum(c.upsells, f);
+// "C. Michael Exteriors – Windows upsell" under "C. Michael Exteriors" reads as just "Windows upsell"
+function upsellLabel(u, c) {
+  const b = String(u.business || '').trim(), base = String(c.business || '').trim();
+  const rest = base && b.toLowerCase().startsWith(base.toLowerCase()) ? b.slice(base.length).replace(/^[\s\-–—:·,]+/, '') : b;
+  return rest || 'Upsell';
+}
+function upsellBlock(c) {
+  if (!c.upsells.length) return '';
+  return `<div class="ups"><span class="label">Upsells · ${c.upsells.length}</span>${c.upsells.map((u, i) => `<div class="up">
+      <div class="item-h"><div class="stack" style="gap:3px"><b>${i + 1}. ${esc(upsellLabel(u, c))}</b><div class="chips">${clientStatus(u)}</div></div><div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num">${$0(u.O)}</b></div></div>
+      <div class="kv"><div><small>Payment</small><span>${$0(u.p3)}</span></div><div><small>Cut at signing</small><span>${$2(u.I)}</span></div><div><small>Every 4 weeks</small><span>${$2(u.K)}</span></div>
+        <div><small>Signed</small><span>${u.signedS == null ? '—' : dLong(u.signedS)}</span></div><div><small>Launch</small><span>${u.launchS == null ? '—' : dLong(u.launchS)}</span></div><div><small>Next payment</small><span>${typeof u.next === 'number' ? dLong(u.next) : esc(u.next)}</span></div></div>
+      <button class="btn ghost sm" data-edit="client" data-id="${esc(u.id)}">Edit upsell</button></div>`).join('')}</div>`;
+}
 function clientRow(c) {
-  const open = openClient === c.id;
-  return `<div class="crow ${open ? 'open' : ''}" id="crow-${esc(c.id)}">
+  const open = openClient === c.id, t = c.tier ? ` tiered lv${tierLevel(c.tier)}` : '';
+  return `<div class="crow${t} ${open ? 'open' : ''}" id="crow-${esc(c.id)}">
     <button class="crow-h" data-toggle-client="${esc(c.id)}" aria-expanded="${open}">
       <span class="cav" style="--h:${nameHue(c.name)}">${esc(initials(c.name))}<i class="cdot ${clientState(c)}"></i></span>
-      <span class="cmain"><b>${esc(c.name)}</b><small>${esc(c.business || 'No company')}</small></span>
-      <span class="camt"><b>${$0(c.p3)}</b><small>${FREQ_LBL[c.freq][1]}</small></span>
+      <span class="cmain"><b>${esc(c.name)}</b><small>${c.tier ? tierBadge(c) + ' ' : ''}${esc(c.business || 'No company')}</small></span>
+      <span class="camt"><b>${$0(withUpsells(c, x => x.p3))}</b><small>every 4 wks</small></span>
     </button>
     ${open ? `<div class="cbody">
-      <div class="cbody-h">${clientBiz(c) || ''}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}<span class="chip">Earned ${$0(c.O)}</span></div></div>
+      <div class="cbody-h">${clientBiz(c) || ''}<div class="chips">${tierBadge(c)}<span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}<span class="chip">Earned ${$0(withUpsells(c, x => x.O))}</span></div></div>
       ${clientKv(c)}
+      ${upsellBlock(c)}
       <button class="btn sm" data-edit="client" data-id="${esc(c.id)}">Edit client</button>
     </div>` : ''}
   </div>`;
@@ -1520,27 +1598,28 @@ function vClients() {
   const d = R.dash;
   return `
   <div class="head"><div><span class="eyebrow">Clients</span><h1>${d.signed} signed · ${$0(d.every4)} every 4 weeks</h1>
-    <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every recurring payment (4-week, weekly or monthly) = ${pct(S.settings.commRecur)}.</p></div>
+    <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every 4-week payment = ${pct(S.settings.commRecur)}.</p></div>
     <button class="btn" data-add="client">+ Add client</button></div>
-  ${isPhone() ? `<div class="clist">${R.clients.map(clientRow).join('') || '<div class="empty">No clients yet. Tap + to add the first one you sign.</div>'}</div>` : `<div class="list">${R.clients.map(c => `
-    <button class="item" data-edit="client" data-id="${esc(c.id)}">
-      <div class="item-h"><div class="stack" style="gap:4px"><b>${esc(c.name)}</b>${clientBiz(c)}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
-        <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num" style="font-size:18px">${$0(c.O)}</b></div></div>
+  ${isPhone() ? `<div class="clist">${R.clients.filter(c => !c.isUpsell).map(clientRow).join('') || '<div class="empty">No clients yet. Tap + to add the first one you sign.</div>'}</div>` : `<div class="list">${R.clients.filter(c => !c.isUpsell).map(c => `
+    <div class="item${c.tier ? ` tiered lv${tierLevel(c.tier)}` : ''}" data-edit="client" data-id="${esc(c.id)}" role="button" tabindex="0">
+      <div class="item-h"><div class="stack" style="gap:4px"><b>${esc(c.name)}</b>${clientBiz(c)}<div class="chips">${tierBadge(c)}<span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
+        <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num" style="font-size:18px">${$0(withUpsells(c, x => x.O))}</b></div></div>
       <div class="kv">
         <div><small>1st payment</small><span>${$0(c.p1)}</span></div>
         <div><small>2nd</small><span>${$0(c.p2)}</span></div>
         <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
         <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
         <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
-        <div><small>${FREQ_LBL[c.freq][0]}</small><span>${$2(c.K)}</span></div>
+        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
         <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
         <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
         <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
-        <div><small>First ${FREQ_LBL[c.freq][2]}</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
-        <div><small>${FREQ_LBL[c.freq][2][0].toUpperCase() + FREQ_LBL[c.freq][2].slice(1)} pmts so far</small><span>${c.N}</span></div>
+        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
         <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
       </div>
-    </button>`).join('') || '<div class="empty">No clients yet. Add the first one you sign.</div>'}
+      ${upsellBlock(c)}
+    </div>`).join('') || '<div class="empty">No clients yet. Add the first one you sign.</div>'}
   </div>`}`;
 }
 
@@ -1697,7 +1776,7 @@ async function geocode(items) {
 function mapPoints() {
   const groups = new Map(), missing = [], pending = [];
   for (const c of R.clients) {
-    if (blank(c.name)) continue;
+    if (blank(c.name) || c.isUpsell) continue; // an upsell shows on its client's pin
     if (blank(c.city)) { missing.push(c); continue; }
     const st = normState(c.state), city = String(c.city).trim(), key = `${city.toLowerCase()}|${st}`;
     let ll = (docs.geo || {})[key], approx = false;
@@ -1709,7 +1788,7 @@ function mapPoints() {
   return { groups: [...groups.values()], missing, pending };
 }
 function vMap() {
-  const named = R.clients.filter(c => !blank(c.name));
+  const named = R.clients.filter(c => !blank(c.name) && !c.isUpsell);
   const states = new Set(named.map(c => normState(c.state)).filter(Boolean)).size;
   return `<div class="head"><div><span class="eyebrow">Client map</span><h1>${named.length} clients across ${states} state${states === 1 ? '' : 's'}</h1>
     <p class="lede">Each pin is a client’s city. Tap a pin to see who’s there.</p></div></div>
@@ -1718,9 +1797,10 @@ function vMap() {
 }
 function pinCard(g) {
   return `<div class="mcard"><div class="card-h"><b>📍 ${esc(g.city)}${g.st ? ', ' + g.st : ''}${g.approx ? ' <small class="hint">(approximate)</small>' : ''}</b><button class="btn ghost sm" data-pop-close>Close</button></div>
-    ${g.clients.map(c => `<div class="mcli"><div class="item-h"><div class="stack" style="gap:3px"><b>${esc(c.name)}</b>${blank(c.business) ? '' : `<span class="hint">${esc(c.business)}</span>`}<div class="chips"><span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
-      <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num">${$0(c.O)}</b></div></div>
-      <div class="kv"><div><small>Every 4 wks</small><span>${$0(c.p3)}</span></div><div><small>Signed</small><span>${c.signedS == null ? '—' : dShort(c.signedS)}</span></div><div><small>Next payment</small><span>${typeof c.next === 'number' ? dShort(c.next) : esc(c.next)}</span></div></div>
+    ${g.clients.map(c => `<div class="mcli"><div class="item-h"><div class="stack" style="gap:3px"><b>${esc(c.name)}</b>${blank(c.business) ? '' : `<span class="hint">${esc(c.business)}</span>`}<div class="chips">${tierBadge(c)}<span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
+      <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num">${$0(withUpsells(c, x => x.O))}</b></div></div>
+      ${c.upsells.length ? `<p class="hint" style="margin:0">Upsells: ${c.upsells.map(u => esc(upsellLabel(u, c)) + ' (' + $0(u.p3) + ')').join(', ')}</p>` : ''}
+      <div class="kv"><div><small>Every 4 wks</small><span>${$0(withUpsells(c, x => x.p3))}</span></div><div><small>Signed</small><span>${c.signedS == null ? '—' : dShort(c.signedS)}</span></div><div><small>Next payment</small><span>${typeof c.next === 'number' ? dShort(c.next) : esc(c.next)}</span></div></div>
       <button class="btn sm" data-edit="client" data-id="${esc(c.id)}">Open client</button></div>`).join('')}</div>`;
 }
 // the label beside a pin: an element-style symbol in Breaking Bad, a scrawled first name in Seven (hidden in the other themes)
@@ -1780,7 +1860,7 @@ async function drawMap() {
       <path class="borders" d="${M.borders}"/><path class="nation" d="${M.nation}"/>${extra}</svg>
     <div class="mfx" aria-hidden="true"><i></i></div><i class="tape tl" aria-hidden="true"></i><i class="tape tr" aria-hidden="true"></i>
     ${pts.map((p, i) => `<span class="mlab" aria-hidden="true" style="left:${(p.x / 9.75).toFixed(2)}%;top:${(p.y / 6.1).toFixed(2)}%;--i:${i}">${esc(pinLabel(p))}</span>`).join('')}
-    ${pts.map((p, i) => `<button class="mpin ${mapSel === p.key ? 'sel' : ''}" data-pin-key="${esc(p.key)}" style="left:${(p.x / 9.75).toFixed(2)}%;top:${(p.y / 6.1).toFixed(2)}%;--i:${i}" aria-label="${esc(p.city)}: ${p.clients.map(c => esc(c.name)).join(', ')}"><i class="ph"></i>${p.clients.length > 1 ? `<span class="pc">${p.clients.length}</span>` : ''}</button>`).join('')}
+    ${pts.map((p, i) => { const top = Math.max(0, ...p.clients.map(c => c.tier)); return `<button class="mpin ${mapSel === p.key ? 'sel' : ''}${top ? ` tier lv${tierLevel(top)}` : ''}" data-pin-key="${esc(p.key)}" style="left:${(p.x / 9.75).toFixed(2)}%;top:${(p.y / 6.1).toFixed(2)}%;--i:${i}" aria-label="${esc(p.city)}: ${p.clients.map(c => esc(c.name)).join(', ')}"><i class="ph"></i>${top ? '<i class="pglow"></i>' : ''}${p.clients.length > 1 ? `<span class="pc">${p.clients.length}</span>` : ''}</button>`; }).join('')}
     ${pop}`;
   const note = document.getElementById('mapnote');
   if (note) note.innerHTML = `${sel && phone ? pinCard(sel) : ''}
@@ -1911,10 +1991,9 @@ const FORMS = {
   client: { title: 'Client', fields: [
     ['name', 'Client name', 'text', { req: true, wide: true }], ['business', 'Business name', 'text', { wide: true }],
     ['p1', '1st payment (at signup)', 'money'], ['signed', 'Date signed (1st payment)', 'date'], ['type', 'Type', 'select', { opts: CLIENT_TYPES }],
-    ['launch', 'Campaign launch', 'date', { help: 'Recurring payments start one cycle later.' }],
-    ['freq', 'Pays', 'select', { opts: FREQS }],
-    ['firstRecur', 'First recurring payment date', 'date', { help: 'Optional. Set it if they pay on fixed dates (weekly/monthly); otherwise counted from launch.' }],
-    ['p2', '2nd payment (1st recurring)', 'money', { more: true, ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
+    ['parent', 'Upsell of which client?', 'client', { wide: true, upsellOnly: true, help: 'They won’t count as an extra client. Their payments still count, and the client moves up a rank.' }],
+    ['launch', 'Campaign launch', 'date', { help: '4-week payments start 4 weeks later.' }],
+    ['p2', '2nd payment (1st 4-week)', 'money', { more: true, ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
     ['p3', '3rd payment & after', 'money', { more: true, ph: 'Same as 2nd', help: 'Type a number if payments step up (e.g. 3,000 → 3,250 → 3,500).' }],
     ['city', 'City', 'text', { more: true }], ['state', 'State', 'text', { more: true, ph: 'e.g. WI' }],
     ['cancel', 'Cancel date (if they leave)', 'date', { more: true, wide: true, help: 'Payments on or after it stop counting.' }]
@@ -1935,8 +2014,11 @@ function openForm(kind, id) {
     if (kind === 'expense' || kind === 'other') init = { date: today, category: 'Other' };
     if (kind === 'nw') { const last = R.nwRows.filter(r => !S.example).slice(-1)[0]; const [y, m] = ymd(last ? edate(last.s, 1) : mk(ymd(R.today)[0], ymd(R.today)[1], 1)); init = { month: `${y}-${String(m).padStart(2, '0')}` }; }
   } else if (kind === 'nw') init.month = String(rec.month).slice(0, 7);
-  const field = ([k, l, t, o = {}]) => `<div class="field ${o.wide ? 'wide' : ''}"><label for="f-${k}">${l}${o.req ? ' *' : ''}</label>${
-      t === 'select' ? `<select id="f-${k}" name="${k}">${o.opts.map(v => `<option ${init[k] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`
+  if (kind === 'client' && rec && rec.type === 'Upsell' && !init.parent) init.parent = (R.clients.find(c => c.id === id) || {}).parentId || '';
+  const parents = kind === 'client' ? R.clients.filter(c => !c.isUpsell && c.type !== 'Upsell' && c.id !== id && !blank(c.name)) : [];
+  const field = ([k, l, t, o = {}]) => `<div class="field ${o.wide ? 'wide' : ''}" ${o.upsellOnly ? `data-upsell-only ${init.type === 'Upsell' ? '' : 'hidden'}` : ''}><label for="f-${k}">${l}${o.req ? ' *' : ''}</label>${
+      t === 'client' ? `<select id="f-${k}" name="${k}"><option value="">Choose the client…</option>${parents.map(c => `<option value="${esc(c.id)}" ${init[k] === c.id ? 'selected' : ''}>${esc(c.name)}${blank(c.business) ? '' : ' · ' + esc(c.business)}</option>`).join('')}</select>`
+      : t === 'select' ? `<select id="f-${k}" name="${k}">${o.opts.map(v => `<option ${init[k] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`
       : `<input id="f-${k}" name="${k}" type="${t === 'money' ? 'text' : t}" ${t === 'money' ? 'inputmode="decimal"' : ''} value="${esc(init[k] ?? '')}" placeholder="${esc(o.ph || '')}">`}${o.help ? `<small>${o.help}</small>` : ''}</div>`;
   const sh = document.getElementById('sheet');
   sh.innerHTML = `<form class="panel" id="form" novalidate><div class="handle" aria-hidden="true"></div>
@@ -1951,6 +2033,17 @@ function openForm(kind, id) {
     <div class="panel-f">${rec ? '<button type="button" class="btn danger" data-del>Delete</button>' : '<span></span>'}<button class="btn" type="submit">${rec ? 'Save changes' : 'Add'}</button></div>
   </form>`;
   sh.hidden = false; document.documentElement.classList.add('sheet-open');
+  if (kind === 'client') {
+    // the client picker shows only for upsells; picking one fills in the name and company if they're empty
+    const typeSel = sh.querySelector('#f-type'), parentSel = sh.querySelector('#f-parent');
+    typeSel?.addEventListener('change', () => sh.querySelectorAll('[data-upsell-only]').forEach(el => { el.hidden = typeSel.value !== 'Upsell'; }));
+    parentSel?.addEventListener('change', () => {
+      const p = R.clients.find(c => c.id === parentSel.value); if (!p) return;
+      const nm = sh.querySelector('#f-name'), bz = sh.querySelector('#f-business');
+      if (nm && !nm.value.trim()) nm.value = p.name;
+      if (bz && !bz.value.trim() && p.business) bz.value = p.business + ' – upsell';
+    });
+  }
   setTimeout(() => sh.querySelector('input,select')?.focus(), 50);
 }
 function closeForm() { const sh = document.getElementById('sheet'); sh.hidden = true; sh.innerHTML = ''; editing = null; document.documentElement.classList.remove('sheet-open'); scheduleRender(); }
@@ -1972,7 +2065,7 @@ function submitForm(form) {
     body[k] = v;
   }
   let docId = id;
-  if (kind === 'client') { body.n = id ? (docs[id].n ?? Date.now()) : Date.now(); docId = id || newId('c'); }
+  if (kind === 'client') { body.n = id ? (docs[id].n ?? Date.now()) : Date.now(); docId = id || newId('c'); if (body.type !== 'Upsell') body.parent = null; }
   if (kind === 'expense') docId = id || newId('e');
   if (kind === 'other') docId = id || newId('o');
   if (kind === 'nw') {
@@ -1988,7 +2081,7 @@ function formErr(m) { const e = document.getElementById('ferr'); e.textContent =
 /* ============ events ============ */
 function go(t) { tab = t; try { history.replaceState(null, '', '#' + t); } catch {} renderTabs(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 document.addEventListener('click', e => {
-  const b = e.target.closest('button,tr[data-edit]'); if (!b) return;
+  const b = e.target.closest('button,tr[data-edit],div.item[data-edit]'); if (!b) return;
   if (b.dataset.pin) return pressPin(b.dataset.pin);
   if (b.dataset.lock) {
     const k = b.dataset.lock;
@@ -2027,7 +2120,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && editing) closeForm();
-  if (e.key === 'Enter' && e.target.matches('tr[data-edit]')) openForm(e.target.dataset.edit, e.target.dataset.id);
+  if (e.key === 'Enter' && e.target.matches('tr[data-edit],div.item[data-edit]')) openForm(e.target.dataset.edit, e.target.dataset.id);
 });
 document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeForm(); });
 document.addEventListener('submit', e => {
