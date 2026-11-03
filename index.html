@@ -399,18 +399,19 @@ h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.0
 [data-skin="bb"] .tier{border-radius:3px;font-family:"IBM Plex Mono",monospace}
 [data-skin="bb"] .tier i::before{content:"⬢"}
 [data-skin="bb"] .crow.tiered .cav{border-radius:6px;box-shadow:0 0 0 3px var(--surface),0 0 0 5px #3FD0F5,0 0 20px #3FD0F5}
-[data-skin="bb"] .mpin.tier{--tc:#d9f8ff;--tg:#3FD0F5}
-[data-skin="bb"] .mpin.tier .ph{border-radius:2px;transform:rotate(45deg);background:linear-gradient(135deg,#ffffff,#8be6ff 40%,#3FD0F5 70%,#1a8fd0);animation:none;box-shadow:0 0 0 2px #e6f2e4,0 0 18px #3FD0F5,0 0 36px #3FD0F5}
-[data-skin="bb"] .mpin.tier .pglow{border-radius:4px}
+/* map: rank pins stay round and pink here too (no crystal box) */
+[data-skin="bb"] .mpin.tier::before,[data-skin="bk"] .mpin.tier::before{border-radius:50%;border-color:#FF4D8D}
+[data-skin="bb"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier .ph{inset:9px;border-radius:50%;transform:none;clip-path:none;filter:none;background:conic-gradient(#5b3df0,#e3226b,#f29a00,#0ea894,#5b3df0);box-shadow:0 0 0 2px #fff,0 0 16px #e3226b,0 0 30px #e3226b;animation:tierspin 3s linear infinite}
+[data-skin="bb"] .mpin.tier:hover .ph,[data-skin="bb"] .mpin.tier.sel .ph,[data-skin="bk"] .mpin.tier:hover .ph,[data-skin="bk"] .mpin.tier.sel .ph{transform:scale(1.35)}
+[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv2 .ph{inset:7px}
+[data-skin="bb"] .mpin.tier.lv3 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:5px;box-shadow:0 0 0 3px #fff,0 0 22px #e3226b,0 0 44px #e3226b}
+[data-skin="bb"] .mpin.tier .pglow,[data-skin="bk"] .mpin.tier .pglow{--tc:#fff;border-radius:50%;transform:none}
 
 /* Berserk: chosen, a red-gold blaze */
 [data-skin="bk"] .tier,[data-skin="bk"] .tiered{--t1:#5e0b10;--t2:#d4261e;--t3:#e3b64a;--t4:#ff6a2a;--tg:rgba(255,70,30,.7);--tfg:#fff3e0}
 [data-skin="bk"] .tier{border-radius:0;font-family:"Spectral",serif;letter-spacing:.14em}
 [data-skin="bk"] .tier i::before{content:"✠";color:#ffe9a8}
 [data-skin="bk"] .crow.tiered .cav{box-shadow:0 0 0 3px var(--surface),0 0 0 5px #e3b64a,0 0 22px #ff3b1f}
-[data-skin="bk"] .mpin.tier{--tc:#e3b64a;--tg:#ff3b1f}
-[data-skin="bk"] .mpin.tier .ph{background:linear-gradient(180deg,#ffe9a8,#e3b64a 40%,#d4261e);animation:none;filter:drop-shadow(0 0 8px #ff3b1f) drop-shadow(0 0 4px #e3b64a)}
-[data-skin="bk"] .mpin.tier .pglow{border-radius:0;transform:rotate(45deg)}
 
 /* Seven: circled on the board, stamped, and moving up the suspect list */
 [data-skin="sv"] .tier,[data-skin="sv"] .tiered{--t1:#8E1B12;--t2:#b3121b;--t3:#8E1B12;--t4:#c0181c;--tg:rgba(142,27,18,.35);--tfg:#8E1B12}
@@ -818,6 +819,16 @@ const DEFAULTS = {
   milestones: [{ amount: 10000, reward: 'Level 1 reward', icon: '🎯' }, { amount: 30000, reward: 'Level 2 reward', icon: '🏆' }]
 };
 const CLIENT_TYPES = ['New', 'Referral', 'Upsell'];
+const FREQS = ['Every 4 weeks', 'Weekly', 'Monthly'];
+const freqOf = c => FREQS.includes(c.freq) ? c.freq : 'Every 4 weeks';
+const FREQ_LBL = { 'Every 4 weeks': ['Every 4 weeks', 'every 4 wks', '4-week'], 'Weekly': ['Every week', 'every week', 'weekly'], 'Monthly': ['Every month', 'every month', 'monthly'] };
+// recurring payment schedule helpers: how many fall on or before t, and the date of the k-th (0-based)
+function schedCount(c, t) {
+  if (c.Q >= NONE || t < c.Q) return 0;
+  if (c.freq === 'Monthly') { const [y1, m1] = ymd(c.Q), [y2, m2] = ymd(t); let m = (y2 - y1) * 12 + m2 - m1; if (edate(c.Q, m) > t) m--; return m + 1; }
+  return Math.floor((t - c.Q) / c.step) + 1;
+}
+const schedAt = (c, k) => c.freq === 'Monthly' ? edate(c.Q, k) : c.Q + k * c.step;
 const EXP_CATS = ['Equipment', 'Software', 'Ads/Marketing', 'Phone/Internet', 'Home office', 'Travel/Mileage', 'Education', 'Other', 'From old sheet'];
 
 /* ============ the engine: every workbook formula, sheet by sheet ============ */
@@ -832,13 +843,19 @@ function compute(S, today) {
     const ref = c.type === 'Referral' || c.type === 'Upsell';
     const I = blank(c.p1) ? 0 : p1 * (ref ? st.commRef : st.commNew);
     const J = p2 * st.commRecur, K = p3 * st.commRecur;
-    const P = cancelS ?? NONE, Q = launchS != null ? launchS + num(st.launchDelay) : NONE;
+    const freq = freqOf(c), step = freq === 'Weekly' ? 7 : cyc, firstS = ser(c.firstRecur);
+    const P = cancelS ?? NONE;
+    // first recurring payment: typed date if given, otherwise one cycle after launch
+    const Q = firstS != null ? firstS : launchS == null ? NONE : freq === 'Monthly' ? edate(launchS, 1) : launchS + (freq === 'Weekly' ? 7 : num(st.launchDelay));
+    const sc = { freq, step, Q };
     let next;
-    if (launchS == null) next = 'Add launch date';
-    else { const n = today <= Q ? Q : Q + cyc * Math.ceil((today - Q) / cyc); next = n < P ? n : 'Cancelled'; }
-    const N = launchS == null ? 0 : Math.max(0, Math.floor((Math.min(today, P - 1) - Q) / cyc) + 1);
+    if (Q >= NONE) next = 'Add launch date';
+    else { const n = schedAt(sc, schedCount(sc, today - 1)); next = n < P ? n : 'Cancelled'; }
+    const N = Q >= NONE ? 0 : schedCount(sc, Math.min(today, P - 1));
     const O = I + (N >= 1 ? J + (N - 1) * K : 0);
-    return { ...c, p1, p2, p3, signedS, launchS, cancelS, I, J, K, P, Q, L: launchS == null ? null : Q, next, N, O, active: P > today, upsells: [] };
+    // commission per 4 weeks, so weekly/monthly clients add up fairly with 4-week ones
+    const K4 = freq === 'Weekly' ? K * 28 / step : freq === 'Monthly' ? K * 28 * 12 / 365 : K;
+    return { ...c, freq, step, p1, p2, p3, signedS, launchS, cancelS, I, J, K, K4, P, Q, L: Q >= NONE ? null : Q, next, N, O, active: P > today, scheduled: Q < NONE, upsells: [] };
   });
   // an upsell belongs to the client it was sold to (its "parent" link, else the client with the same name); it still earns, but isn't another client
   const byId = new Map(clients.map(c => [c.id, c]));
@@ -859,7 +876,7 @@ function compute(S, today) {
   const first = ser(st.firstPayday) ?? mk(year, 1, 15);
   const monthsToToday = (ymd(today)[0] - ymd(first)[0]) * 12 + ymd(today)[1] - ymd(first)[1];
   const nPay = Math.max(80, monthsToToday + 14);
-  const cnt = (t, c) => { const cap = t < c.P ? t : c.P - 1; return cap >= c.Q ? Math.floor((cap - c.Q) / cyc) + 1 : 0; };
+  const cnt = (t, c) => schedCount(c, t < c.P ? t : c.P - 1);
   const paydays = [];
   for (let i = 0; i < nPay; i++) {
     const C = edate(first, i), B = edate(C, -1) + 1;
@@ -933,11 +950,11 @@ function compute(S, today) {
   const shouldTax = Math.max(0, profit) * tax;
   const movedTax = sum(paydays.filter(p => p.C >= jan1 && p.C <= today), p => p.moved || 0);
   const named = clients.filter(c => !blank(c.name));
-  const every4 = sum(named.filter(c => c.P > today), c => c.K);
+  const every4 = sum(named.filter(c => c.P > today), c => c.K4);
   const dash = {
     next, owed: sum(paydays, p => p.owe || 0),
     income, costs, profit, shouldTax, movedTax, shortfall: Math.max(0, shouldTax - movedTax),
-    signed: named.filter(c => !c.isUpsell).length, waiting: named.filter(c => !c.isUpsell && c.launchS == null).length, upsells: named.filter(c => c.isUpsell).length,
+    signed: named.filter(c => !c.isUpsell).length, waiting: named.filter(c => !c.isUpsell && !c.scheduled).length, upsells: named.filter(c => c.isUpsell).length,
     every4, perYear: every4 * 365 / cyc, earned: sum(clients, c => c.O)
   };
   return { clients, expenses, others, paydays, nextIdx, months, years, nwRows, nwLatest, best, bestMonth, levels, dash, today };
@@ -1528,7 +1545,7 @@ function levelCard(l, i) {
 
 function clientStatus(c) {
   if (c.cancelS != null && !c.active) return '<span class="chip bad">Cancelled</span>';
-  if (c.launchS == null) return '<span class="chip warn">Waiting on launch</span>';
+  if (!c.scheduled) return '<span class="chip warn">Waiting on launch</span>';
   if (c.cancelS != null) return '<span class="chip warn">Leaving ' + dShort(c.cancelS) + '</span>';
   return '<span class="chip good">Active</span>';
 }
@@ -1539,7 +1556,7 @@ function clientBiz(c) {
 }
 // phone: one compact row per client (name · company · payment); tapping a row opens its full details in place
 let openClient = null;
-const clientState = c => (c.cancelS != null && !c.active) ? 'bad' : c.launchS == null ? 'warn' : c.cancelS != null ? 'warn' : 'good';
+const clientState = c => (c.cancelS != null && !c.active) ? 'bad' : !c.scheduled ? 'warn' : c.cancelS != null ? 'warn' : 'good';
 const initials = s => String(s || '?').replace(/^Example:\s*/, '').split(/[^A-Za-z0-9]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
 const nameHue = s => [...String(s || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 7);
 function clientKv(c) {
@@ -1549,12 +1566,12 @@ function clientKv(c) {
         <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
         <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
         <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
-        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][0]}</small><span>${$2(c.K)}</span></div>
         <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
         <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
         <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
-        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
-        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
+        <div><small>First ${FREQ_LBL[c.freq][2]}</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][2][0].toUpperCase() + FREQ_LBL[c.freq][2].slice(1)} pmts so far</small><span>${c.N}</span></div>
         <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
       </div>`;
 }
@@ -1574,7 +1591,7 @@ function upsellBlock(c) {
   if (!c.upsells.length) return '';
   return `<div class="ups"><span class="label">Upsells · ${c.upsells.length}</span>${c.upsells.map((u, i) => `<div class="up">
       <div class="item-h"><div class="stack" style="gap:3px"><b>${i + 1}. ${esc(upsellLabel(u, c))}</b><div class="chips">${clientStatus(u)}</div></div><div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num">${$0(u.O)}</b></div></div>
-      <div class="kv"><div><small>Payment</small><span>${$0(u.p3)}</span></div><div><small>Cut at signing</small><span>${$2(u.I)}</span></div><div><small>Every 4 weeks</small><span>${$2(u.K)}</span></div>
+      <div class="kv"><div><small>Payment</small><span>${$0(u.p3)}</span></div><div><small>Cut at signing</small><span>${$2(u.I)}</span></div><div><small>${FREQ_LBL[u.freq][0]}</small><span>${$2(u.K)}</span></div>
         <div><small>Signed</small><span>${u.signedS == null ? '—' : dLong(u.signedS)}</span></div><div><small>Launch</small><span>${u.launchS == null ? '—' : dLong(u.launchS)}</span></div><div><small>Next payment</small><span>${typeof u.next === 'number' ? dLong(u.next) : esc(u.next)}</span></div></div>
       <button class="btn ghost sm" data-edit="client" data-id="${esc(u.id)}">Edit upsell</button></div>`).join('')}</div>`;
 }
@@ -1584,7 +1601,7 @@ function clientRow(c) {
     <button class="crow-h" data-toggle-client="${esc(c.id)}" aria-expanded="${open}">
       <span class="cav" style="--h:${nameHue(c.name)}">${esc(initials(c.name))}<i class="cdot ${clientState(c)}"></i></span>
       <span class="cmain"><b>${esc(c.name)}</b><small>${c.tier ? tierBadge(c) + ' ' : ''}${esc(c.business || 'No company')}</small></span>
-      <span class="camt"><b>${$0(withUpsells(c, x => x.p3))}</b><small>every 4 wks</small></span>
+      <span class="camt"><b>${$0(withUpsells(c, x => x.p3))}</b><small>${FREQ_LBL[c.freq][1]}</small></span>
     </button>
     ${open ? `<div class="cbody">
       <div class="cbody-h">${clientBiz(c) || ''}<div class="chips">${tierBadge(c)}<span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}<span class="chip">Earned ${$0(withUpsells(c, x => x.O))}</span></div></div>
@@ -1598,7 +1615,7 @@ function vClients() {
   const d = R.dash;
   return `
   <div class="head"><div><span class="eyebrow">Clients</span><h1>${d.signed} signed · ${$0(d.every4)} every 4 weeks</h1>
-    <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every 4-week payment = ${pct(S.settings.commRecur)}.</p></div>
+    <p class="lede">New = ${pct(S.settings.commNew)} of the first payment. Referral or Upsell = ${pct(S.settings.commRef)}. Every recurring payment (4-week, weekly or monthly) = ${pct(S.settings.commRecur)}.</p></div>
     <button class="btn" data-add="client">+ Add client</button></div>
   ${isPhone() ? `<div class="clist">${R.clients.filter(c => !c.isUpsell).map(clientRow).join('') || '<div class="empty">No clients yet. Tap + to add the first one you sign.</div>'}</div>` : `<div class="list">${R.clients.filter(c => !c.isUpsell).map(c => `
     <div class="item${c.tier ? ` tiered lv${tierLevel(c.tier)}` : ''}" data-edit="client" data-id="${esc(c.id)}" role="button" tabindex="0">
@@ -1610,12 +1627,12 @@ function vClients() {
         <div><small>3rd & after</small><span>${$0(c.p3)}</span></div>
         <div><small>Cut at signing</small><span>${$2(c.I)}</span></div>
         <div><small>Cut of 2nd</small><span>${$2(c.J)}</span></div>
-        <div><small>Every 4 weeks</small><span>${$2(c.K)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][0]}</small><span>${$2(c.K)}</span></div>
         <div><small>Signed</small><span>${c.signedS == null ? '—' : dLong(c.signedS)}</span></div>
         <div><small>Launch</small><span>${c.launchS == null ? '—' : dLong(c.launchS)}</span></div>
         <div><small>Next payment</small><span>${typeof c.next === 'number' ? dLong(c.next) : esc(c.next)}</span></div>
-        <div><small>First 4-week</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
-        <div><small>4-week pmts so far</small><span>${c.N}</span></div>
+        <div><small>First ${FREQ_LBL[c.freq][2]}</small><span>${c.L == null ? '—' : dLong(c.L)}</span></div>
+        <div><small>${FREQ_LBL[c.freq][2][0].toUpperCase() + FREQ_LBL[c.freq][2].slice(1)} pmts so far</small><span>${c.N}</span></div>
         <div><small>Cancel date</small><span>${c.cancelS == null ? '—' : dLong(c.cancelS)}</span></div>
       </div>
       ${upsellBlock(c)}
@@ -1795,13 +1812,16 @@ function vMap() {
     <div class="mapwrap" id="mapwrap"><div class="map-msg">Drawing the map…</div></div>
     <div id="mapnote" class="stack"></div>`;
 }
-function pinCard(g) {
-  return `<div class="mcard"><div class="card-h"><b>📍 ${esc(g.city)}${g.st ? ', ' + g.st : ''}${g.approx ? ' <small class="hint">(approximate)</small>' : ''}</b><button class="btn ghost sm" data-pop-close>Close</button></div>
-    ${g.clients.map(c => `<div class="mcli"><div class="item-h"><div class="stack" style="gap:3px"><b>${esc(c.name)}</b>${blank(c.business) ? '' : `<span class="hint">${esc(c.business)}</span>`}<div class="chips">${tierBadge(c)}<span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
+// one card for the tapped pin plus any pins sitting right next to it (too close to tap apart)
+function pinCard(gs) {
+  const place = g => `${esc(g.city)}${g.st ? ', ' + g.st : ''}${g.approx ? ' <small class="hint">(approximate)</small>' : ''}`;
+  const many = gs.length > 1;
+  return `<div class="mcard"><div class="card-h"><b>📍 ${many ? `${gs.length} places close together` : place(gs[0])}</b><button class="btn ghost sm" data-pop-close>Close</button></div>
+    ${gs.map(g => `${many ? `<span class="label">${place(g)}</span>` : ''}${g.clients.map(c => `<div class="mcli"><div class="item-h"><div class="stack" style="gap:3px"><b>${esc(c.name)}</b>${blank(c.business) ? '' : `<span class="hint">${esc(c.business)}</span>`}<div class="chips">${tierBadge(c)}<span class="chip vio">${esc(c.type || 'New')}</span>${clientStatus(c)}</div></div>
       <div class="stack" style="gap:0;text-align:right"><small class="hint">Earned</small><b class="num">${$0(withUpsells(c, x => x.O))}</b></div></div>
       ${c.upsells.length ? `<p class="hint" style="margin:0">Upsells: ${c.upsells.map(u => esc(upsellLabel(u, c)) + ' (' + $0(u.p3) + ')').join(', ')}</p>` : ''}
-      <div class="kv"><div><small>Every 4 wks</small><span>${$0(withUpsells(c, x => x.p3))}</span></div><div><small>Signed</small><span>${c.signedS == null ? '—' : dShort(c.signedS)}</span></div><div><small>Next payment</small><span>${typeof c.next === 'number' ? dShort(c.next) : esc(c.next)}</span></div></div>
-      <button class="btn sm" data-edit="client" data-id="${esc(c.id)}">Open client</button></div>`).join('')}</div>`;
+      <div class="kv"><div><small>${FREQ_LBL[c.freq][0]}</small><span>${$0(withUpsells(c, x => x.p3))}</span></div><div><small>Signed</small><span>${c.signedS == null ? '—' : dShort(c.signedS)}</span></div><div><small>Next payment</small><span>${typeof c.next === 'number' ? dShort(c.next) : esc(c.next)}</span></div></div>
+      <button class="btn sm" data-edit="client" data-id="${esc(c.id)}">Open client</button></div>`).join('')}`).join('')}</div>`;
 }
 // the label beside a pin: an element-style symbol in Breaking Bad, a scrawled first name in Seven (hidden in the other themes)
 function pinLabel(p) {
@@ -1852,18 +1872,18 @@ async function drawMap() {
   const hot = new Set(pts.map(p => p.st && STATES[p.st][0]));
   const order = [...pts].sort((a, b) => Math.min(...a.clients.map(c => c.signedS ?? 1e9)) - Math.min(...b.clients.map(c => c.signedS ?? 1e9)));
   const extra = mapDecor(currentSkin, order, pts, groups);
-  const sel = pts.find(p => p.key === mapSel);
+  const sels = (mapSel || []).map(k => pts.find(p => p.key === k)).filter(Boolean), sel = sels[0];
   const phone = isPhone();
-  const pop = sel && !phone ? `<div class="mpop ${sel.y / 610 < 0.45 ? 'below' : ''}" style="left:${Math.min(80, Math.max(20, sel.x / 9.75)).toFixed(2)}%;top:${(sel.y / 6.1).toFixed(2)}%">${pinCard(sel)}</div>` : '';
+  const pop = sel && !phone ? `<div class="mpop ${sel.y / 610 < 0.45 ? 'below' : ''}" style="left:${Math.min(80, Math.max(20, sel.x / 9.75)).toFixed(2)}%;top:${(sel.y / 6.1).toFixed(2)}%">${pinCard(sels)}</div>` : '';
   wrap.classList.toggle('drop', mapAnimate); mapAnimate = false;
   wrap.innerHTML = `<svg class="usmap" viewBox="0 0 975 610" aria-hidden="true"><g>${M.states.map(s => `<path class="state ${hot.has(s.name) ? 'hot' : ''}" d="${s.d}"/>`).join('')}</g>
       <path class="borders" d="${M.borders}"/><path class="nation" d="${M.nation}"/>${extra}</svg>
     <div class="mfx" aria-hidden="true"><i></i></div><i class="tape tl" aria-hidden="true"></i><i class="tape tr" aria-hidden="true"></i>
     ${pts.map((p, i) => `<span class="mlab" aria-hidden="true" style="left:${(p.x / 9.75).toFixed(2)}%;top:${(p.y / 6.1).toFixed(2)}%;--i:${i}">${esc(pinLabel(p))}</span>`).join('')}
-    ${pts.map((p, i) => { const top = Math.max(0, ...p.clients.map(c => c.tier)); return `<button class="mpin ${mapSel === p.key ? 'sel' : ''}${top ? ` tier lv${tierLevel(top)}` : ''}" data-pin-key="${esc(p.key)}" style="left:${(p.x / 9.75).toFixed(2)}%;top:${(p.y / 6.1).toFixed(2)}%;--i:${i}" aria-label="${esc(p.city)}: ${p.clients.map(c => esc(c.name)).join(', ')}"><i class="ph"></i>${top ? '<i class="pglow"></i>' : ''}${p.clients.length > 1 ? `<span class="pc">${p.clients.length}</span>` : ''}</button>`; }).join('')}
+    ${pts.map((p, i) => { const top = Math.max(0, ...p.clients.map(c => c.tier)); return `<button class="mpin ${sels.includes(p) ? 'sel' : ''}${top ? ` tier lv${tierLevel(top)}` : ''}" data-pin-key="${esc(p.key)}" style="left:${(p.x / 9.75).toFixed(2)}%;top:${(p.y / 6.1).toFixed(2)}%;--i:${i}" aria-label="${esc(p.city)}: ${p.clients.map(c => esc(c.name)).join(', ')}"><i class="ph"></i>${top ? '<i class="pglow"></i>' : ''}${p.clients.length > 1 ? `<span class="pc">${p.clients.length}</span>` : ''}</button>`; }).join('')}
     ${pop}`;
   const note = document.getElementById('mapnote');
-  if (note) note.innerHTML = `${sel && phone ? pinCard(sel) : ''}
+  if (note) note.innerHTML = `${sel && phone ? pinCard(sels) : ''}
     ${pending.length ? `<p class="hint">Finding ${pending.length} cit${pending.length === 1 ? 'y' : 'ies'} on the map…</p>` : ''}
     ${missing.length ? `<p class="hint">Not on the map: ${missing.map(c => esc(c.name)).join(', ')} (add a city, or check its spelling).</p>` : ''}`;
   if (pending.length) geocode(pending);
@@ -1992,8 +2012,10 @@ const FORMS = {
     ['name', 'Client name', 'text', { req: true, wide: true }], ['business', 'Business name', 'text', { wide: true }],
     ['p1', '1st payment (at signup)', 'money'], ['signed', 'Date signed (1st payment)', 'date'], ['type', 'Type', 'select', { opts: CLIENT_TYPES }],
     ['parent', 'Upsell of which client?', 'client', { wide: true, upsellOnly: true, help: 'They won’t count as an extra client. Their payments still count, and the client moves up a rank.' }],
-    ['launch', 'Campaign launch', 'date', { help: '4-week payments start 4 weeks later.' }],
-    ['p2', '2nd payment (1st 4-week)', 'money', { more: true, ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
+    ['launch', 'Campaign launch', 'date', { help: 'Recurring payments start one cycle later.' }],
+    ['freq', 'Pays', 'select', { opts: FREQS }],
+    ['firstRecur', 'First recurring payment date', 'date', { help: 'Optional. Set it if they pay on fixed dates (weekly/monthly); otherwise counted from launch.' }],
+    ['p2', '2nd payment (1st recurring)', 'money', { more: true, ph: 'Same as 1st', help: 'Leave blank if it’s the same as the 1st payment.' }],
     ['p3', '3rd payment & after', 'money', { more: true, ph: 'Same as 2nd', help: 'Type a number if payments step up (e.g. 3,000 → 3,250 → 3,500).' }],
     ['city', 'City', 'text', { more: true }], ['state', 'State', 'text', { more: true, ph: 'e.g. WI' }],
     ['cancel', 'Cancel date (if they leave)', 'date', { more: true, wide: true, help: 'Payments on or after it stop counting.' }]
@@ -2094,7 +2116,10 @@ document.addEventListener('click', e => {
   if (b.hasAttribute('data-export')) return exportBackup();
   if (b.hasAttribute('data-import')) return document.getElementById('importFile').click();
   if (b.hasAttribute('data-signout')) { closeForm(); tab = 'home'; renderTabs(); return firebase.auth().signOut(); }
-  if (b.dataset.pinKey) { mapSel = mapSel === b.dataset.pinKey ? null : b.dataset.pinKey; render(); if (mapSel && isPhone()) document.getElementById('mapnote')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
+  if (b.dataset.pinKey) {
+    // pins within a fingertip of the tapped one open together, so crowded spots stay reachable
+    const r0 = b.getBoundingClientRect(), near = [...document.querySelectorAll('.mpin')].filter(o => o !== b).map(o => { const r = o.getBoundingClientRect(); return { k: o.dataset.pinKey, d: Math.hypot(r.x - r0.x, r.y - r0.y) }; }).filter(o => o.d < 30).sort((x, y) => x.d - y.d).map(o => o.k);
+    mapSel = mapSel && mapSel[0] === b.dataset.pinKey ? null : [b.dataset.pinKey, ...near]; render(); if (mapSel && isPhone()) document.getElementById('mapnote')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
   if (b.hasAttribute('data-pop-close')) { mapSel = null; return render(); }
   if (b.dataset.toggleClient) {
     const id = b.dataset.toggleClient; openClient = openClient === id ? null : id; render();
