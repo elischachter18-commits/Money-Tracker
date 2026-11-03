@@ -400,12 +400,16 @@ h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.0
 [data-skin="bb"] .tier i::before{content:"⬢"}
 [data-skin="bb"] .crow.tiered .cav{border-radius:6px;box-shadow:0 0 0 3px var(--surface),0 0 0 5px #3FD0F5,0 0 20px #3FD0F5}
 /* map: rank pins stay round and pink here too (no crystal box) */
-[data-skin="bb"] .mpin.tier::before,[data-skin="bk"] .mpin.tier::before{border-radius:50%}
-[data-skin="bb"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier .ph,[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv2 .ph,[data-skin="bb"] .mpin.tier.lv3 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:10px;border-radius:50%;transform:none;clip-path:none;filter:none;background:#FF4D8D;box-shadow:0 0 0 2px rgba(255,77,141,.3),0 0 12px #FF4D8D;animation:none}
-[data-skin="bb"] .mpin.tier:hover .ph,[data-skin="bb"] .mpin.tier.sel .ph,[data-skin="bk"] .mpin.tier:hover .ph,[data-skin="bk"] .mpin.tier.sel .ph{transform:scale(1.3)}
+/* map: an upsell pin is the theme's usual pin shape, a bit bigger, in pink, with a faster ping.
+   The pin also carries the .tier class, so clear the badge pill/box that class draws on client cards. */
+[data-skin="bb"] .mpin.tier,[data-skin="bk"] .mpin.tier{background:none;padding:0;border-radius:0;box-shadow:none;animation:none}
 [data-skin="bb"] .mpin.tier .pglow,[data-skin="bk"] .mpin.tier .pglow{display:none}
-@media (max-width:760px){[data-skin="bb"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier .ph,[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv2 .ph,[data-skin="bb"] .mpin.tier.lv3 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:9px}}
-[data-skin="bb"] .mpin.tier::before,[data-skin="bk"] .mpin.tier::before{inset:9px;border-color:#FF4D8D;animation-duration:1.8s}
+[data-skin="bb"] .mpin.tier::before,[data-skin="bk"] .mpin.tier::before{border-color:#FF5FA2;animation-duration:1.6s}
+[data-skin="bb"] .mpin.tier .ph,[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bb"] .mpin.tier.lv3 .ph{inset:8px;border-radius:2px;transform:rotate(45deg);background:linear-gradient(135deg,#ffe0ee,#FF5FA2 45%,#c2185b);box-shadow:0 0 14px #FF5FA2;animation:none}
+[data-skin="bb"] .mpin.tier:hover .ph,[data-skin="bb"] .mpin.tier.sel .ph{transform:rotate(45deg) scale(1.3)}
+[data-skin="bk"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:2px;border-radius:0;background:#FF5FA2;box-shadow:none;filter:drop-shadow(0 0 6px #FF5FA2);animation:none}
+[data-skin="bk"] .mpin.tier.sel .ph{background:#ffe0ee}
+@media (max-width:760px){[data-skin="bb"] .mpin.tier .ph,[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bb"] .mpin.tier.lv3 .ph{inset:8.5px}[data-skin="bk"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:2px}}
 
 /* Berserk: chosen, a red-gold blaze */
 [data-skin="bk"] .tier,[data-skin="bk"] .tiered{--t1:#5e0b10;--t2:#d4261e;--t3:#e3b64a;--t4:#ff6a2a;--tg:rgba(255,70,30,.7);--tfg:#fff3e0}
