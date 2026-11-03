@@ -400,12 +400,12 @@ h2{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.0
 [data-skin="bb"] .tier i::before{content:"⬢"}
 [data-skin="bb"] .crow.tiered .cav{border-radius:6px;box-shadow:0 0 0 3px var(--surface),0 0 0 5px #3FD0F5,0 0 20px #3FD0F5}
 /* map: rank pins stay round and pink here too (no crystal box) */
-[data-skin="bb"] .mpin.tier::before,[data-skin="bk"] .mpin.tier::before{border-radius:50%;border-color:#FF4D8D}
-[data-skin="bb"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier .ph{inset:9px;border-radius:50%;transform:none;clip-path:none;filter:none;background:conic-gradient(#5b3df0,#e3226b,#f29a00,#0ea894,#5b3df0);box-shadow:0 0 0 2px #fff,0 0 16px #e3226b,0 0 30px #e3226b;animation:tierspin 3s linear infinite}
-[data-skin="bb"] .mpin.tier:hover .ph,[data-skin="bb"] .mpin.tier.sel .ph,[data-skin="bk"] .mpin.tier:hover .ph,[data-skin="bk"] .mpin.tier.sel .ph{transform:scale(1.35)}
-[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv2 .ph{inset:7px}
-[data-skin="bb"] .mpin.tier.lv3 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:5px;box-shadow:0 0 0 3px #fff,0 0 22px #e3226b,0 0 44px #e3226b}
-[data-skin="bb"] .mpin.tier .pglow,[data-skin="bk"] .mpin.tier .pglow{--tc:#fff;border-radius:50%;transform:none}
+[data-skin="bb"] .mpin.tier::before,[data-skin="bk"] .mpin.tier::before{border-radius:50%}
+[data-skin="bb"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier .ph,[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv2 .ph,[data-skin="bb"] .mpin.tier.lv3 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:10px;border-radius:50%;transform:none;clip-path:none;filter:none;background:#FF4D8D;box-shadow:0 0 0 2px rgba(255,77,141,.3),0 0 12px #FF4D8D;animation:none}
+[data-skin="bb"] .mpin.tier:hover .ph,[data-skin="bb"] .mpin.tier.sel .ph,[data-skin="bk"] .mpin.tier:hover .ph,[data-skin="bk"] .mpin.tier.sel .ph{transform:scale(1.3)}
+[data-skin="bb"] .mpin.tier .pglow,[data-skin="bk"] .mpin.tier .pglow{display:none}
+@media (max-width:760px){[data-skin="bb"] .mpin.tier .ph,[data-skin="bk"] .mpin.tier .ph,[data-skin="bb"] .mpin.tier.lv2 .ph,[data-skin="bk"] .mpin.tier.lv2 .ph,[data-skin="bb"] .mpin.tier.lv3 .ph,[data-skin="bk"] .mpin.tier.lv3 .ph{inset:9px}}
+[data-skin="bb"] .mpin.tier::before,[data-skin="bk"] .mpin.tier::before{inset:9px;border-color:#FF4D8D;animation-duration:1.8s}
 
 /* Berserk: chosen, a red-gold blaze */
 [data-skin="bk"] .tier,[data-skin="bk"] .tiered{--t1:#5e0b10;--t2:#d4261e;--t3:#e3b64a;--t4:#ff6a2a;--tg:rgba(255,70,30,.7);--tfg:#fff3e0}
