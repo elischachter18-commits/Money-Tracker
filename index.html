@@ -727,6 +727,7 @@ button,a,input,select{touch-action:manipulation}
   text-shadow:3px 0 0 rgba(0,230,255,.6),-3px 0 0 rgba(255,0,60,.75),0 0 18px rgba(255,80,20,.7);
   opacity:0;will-change:transform,opacity;animation:fyslam 1.6s cubic-bezier(.2,1.3,.35,1) both}
 @keyframes fyslam{0%{transform:scale(1.7);opacity:0}9%{transform:scale(.94);opacity:1}15%{transform:scale(1.03)}21%,76%{transform:scale(1);opacity:1}100%{transform:scale(1.03);opacity:0}}
+.fy .fy-word{font-size:.42em;line-height:1.1;margin-top:.25em;max-width:92vw;text-align:center;overflow-wrap:anywhere}
 .lock-link{background:none;border:0;color:var(--on-bg-muted);font:600 13.5px var(--f-body);text-decoration:underline;cursor:pointer}
 @media (max-width:760px){
   body{font-size:15px;overscroll-behavior-y:none}
@@ -1218,7 +1219,8 @@ function boom() {
   if (body) { body.classList.remove('quake'); void body.offsetWidth; body.classList.add('quake'); }
   el.querySelectorAll('.fy-wrap').forEach(n => n.remove());
   const fx = document.createElement('div'); fx.className = 'fy-wrap'; fx.setAttribute('aria-hidden', 'true');
-  fx.innerHTML = '<i class="fy-flash"></i><canvas class="fy-sparks"></canvas><div class="fy"><span>FUCK</span><span>YOU</span></div>';
+  const word = lock.word; lock.word = '';
+  fx.innerHTML = `<i class="fy-flash"></i><canvas class="fy-sparks"></canvas><div class="fy"><span>FUCK</span><span>YOU</span>${word ? `<span class="fy-word">${esc(word.toUpperCase())}</span>` : ''}</div>`;
   el.appendChild(fx);
   blast(fx.querySelector('canvas'));
   setTimeout(() => fx.remove(), 1650);
@@ -1284,7 +1286,11 @@ async function pressPin(k) {
         return;
       }
     } else if (!docs.settings) { Object.assign(lock, { entry: '', msg: 'Still loading your data. Try again in a moment.' }); }
-    else if (!(await pinMatches(entry))) { Object.assign(lock, { entry: '', msg: '', shake: true, boom: true }); }
+    else if (!(await pinMatches(entry))) {
+      // secret code: same effect, plus the word chosen in Settings
+      const word = entry === '1787' && lock.mode === 'unlock' ? String(docs.settings.fyWord || '').trim() : '';
+      Object.assign(lock, { entry: '', msg: '', shake: true, boom: true, word });
+    }
     else if (lock.mode === 'unlock') { lock.ok = true; hideLock(); return; }
     else if (lock.mode === 'change') { Object.assign(lock, { mode: 'set1', entry: '', msg: '' }); }
     else if (lock.mode === 'off') {
@@ -1932,7 +1938,8 @@ function vSettings() {
     <p class="hint" style="font-size:14px">${pinSet() ? 'Your 4-digit passcode is asked every time the app opens, on every device you use.' : 'Ask for a 4-digit passcode every time the app opens.'}${pinSet() && lsRaw(LS_FACE) ? ' Face ID is on for this device.' : ''}</p>
     <div class="chips">${pinSet()
       ? `<button class="btn ghost sm" data-lock="change">Change passcode</button>${window.PublicKeyCredential ? (lsRaw(LS_FACE) ? '<button class="btn ghost sm" data-lock="faceoff">Turn off Face ID here</button>' : '<button class="btn ghost sm" data-lock="faceon">Use Face ID on this device</button>') : ''}<button class="btn danger sm" data-lock="off">Turn off passcode</button>`
-      : '<button class="btn sm" data-lock="set">Set a passcode</button>'}</div></div>
+      : '<button class="btn sm" data-lock="set">Set a passcode</button>'}</div>
+    ${pinSet() ? `<div class="field"><label for="set-fyword">Secret code 1787 says “FUCK YOU …”</label><input id="set-fyword" data-fyword maxlength="30" placeholder="your word" value="${esc((docs.settings || {}).fyWord || '')}"><small>Typing 1787 on the lock screen shows this with the full effect.</small></div>` : ''}</div>
   <div class="card"><h2>Account &amp; backup</h2>
     <p class="hint" style="font-size:14px">${mode === 'db' ? `Signed in as <b>${esc(account?.email || '')}</b>. Your entries sync to every device where you sign in, and keep working with no signal.` : 'Sync isn’t set up, so entries are saved on this device only.'}</p>
     <div class="chips"><button class="btn ghost sm" data-export>Download backup</button><button class="btn ghost sm" data-import>Import backup</button>${mode === 'db' ? '<button class="btn danger sm" data-signout>Sign out</button>' : ''}</div></div>`;
@@ -2158,6 +2165,7 @@ document.addEventListener('submit', e => {
 });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.hasAttribute('data-fyword')) { write('settings', { ...(docs.settings || {}), fyWord: t.value.trim().slice(0, 30) }); toast('Saved'); }
   if (t.dataset.pay) {
     const date = t.dataset.pay, id = 'p-' + date, cur = docs[id] || { kind: 'payday', date };
     const v = moneyVal(t.value); if (Number.isNaN(v)) { toast('Type a number, like 2525'); t.value = cur[t.dataset.field] ?? ''; return; }
